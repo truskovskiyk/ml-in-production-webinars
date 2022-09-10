@@ -35,33 +35,3 @@ jobs:
           tags: kyrylprojector/app-ml:dev
           cache-from: type=registry,ref=kyrylprojector/app-ml:buildcache
           cache-to: type=registry,ref=kyrylprojector/app-ml:buildcache,mode=max
-
-
-    runs-on: ubuntu-latest
-    name: build example and deploy to minikube
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Start minikube
-      uses: medyagh/setup-minikube@master
-
-    - name: Try the cluster !
-      run: kubectl get pods -A
-    
-    - name: Deploy job to minikube
-      run: |
-        kubectl create -f week-1/k8s-resources/job-app-ml.yaml 
-        kubectl wait --for=condition=complete --timeout=300s job/job-app-ml
-        kubectl get pod
-
-    - name: Deploy app to minikube
-      run: |
-        # kubectl create -f week-1/k8s-resources/deployment-app-web.yaml
-        kubectl get pod 
-  
-    # - name: Test service URLs
-    #   run: |
-    #     minikube service list
-    #     minikube service deployments-app-web --url
-    #     echo "------------------opening the service------------------"
-    #     curl $(minikube service deployments-app-web --url)  
