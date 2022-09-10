@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'main'
+      - 'week-1'
 env:
   IMAGE_ML_APP: app-ml
   IMAGE_ML_WEB: app-web
