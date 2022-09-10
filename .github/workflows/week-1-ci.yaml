@@ -5,8 +5,8 @@ on:
     branches:
       - 'main'
       - 'week-1'
-    paths:
-      - ./week-1/
+    # paths:
+    #   - ./week-1/
 
   workflow_dispatch:
 
