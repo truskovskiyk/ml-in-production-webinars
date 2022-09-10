@@ -5,6 +5,9 @@ on:
     branches:
       - 'main'
       - 'week-1'
+  paths:
+    - ./week-1/
+
 env:
   IMAGE_ML_APP: app-ml
   IMAGE_ML_WEB: app-web
