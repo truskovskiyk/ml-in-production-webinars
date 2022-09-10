@@ -33,5 +33,5 @@ jobs:
           file: week-1/app-ml/Dockerfile
           push: true
           tags: kyrylprojector/app-ml:dev
-          cache-from: type=registry,ref=kyrylprojector/app-ml:buildcache
-          cache-to: type=registry,ref=kyrylprojector/app-ml:buildcache,mode=max
+          # cache-from: type=registry,ref=kyrylprojector/app-ml:buildcache
+          # cache-to: type=registry,ref=kyrylprojector/app-ml:buildcache,mode=max
