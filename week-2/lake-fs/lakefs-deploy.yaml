@@ -1,0 +1,112 @@
+---
+# Source: lakefs/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-lakefs
+---
+# Source: lakefs/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-lakefs
+  labels:
+    helm.sh/chart: lakefs-0.5.72
+    app: lakefs
+    app.kubernetes.io/name: lakefs
+    app.kubernetes.io/instance: my-lakefs
+    app.kubernetes.io/version: "0.70.5"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: lakefs
+    app.kubernetes.io/name: lakefs
+    app.kubernetes.io/instance: my-lakefs
+---
+# Source: lakefs/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-lakefs
+  labels:
+    helm.sh/chart: lakefs-0.5.72
+    app: lakefs
+    app.kubernetes.io/name: lakefs
+    app.kubernetes.io/instance: my-lakefs
+    app.kubernetes.io/version: "0.70.5"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lakefs
+      app.kubernetes.io/name: lakefs
+      app.kubernetes.io/instance: my-lakefs
+  template:
+    metadata:
+      annotations:
+        checksum/config: e694b4262a642b8c6565fd54268914ff854d57e3509905a69e65625662d2628e
+      labels:
+        app: lakefs
+        app.kubernetes.io/name: lakefs
+        app.kubernetes.io/instance: my-lakefs
+    spec:
+      serviceAccountName: default
+      securityContext:
+        null
+      containers:
+        - name: lakefs
+          command: ["/app/wait-for", "localhost:5432", "--", "/app/lakefs", "run"]
+          args: ["run"]
+          securityContext:
+            null
+          image: "treeverse/lakefs:0.70.5"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /_health
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /_health
+              port: http
+          resources:
+            {}
+          volumeMounts:
+            - name: lakefs-local-data
+              mountPath: "/lakefs/data"
+          env:
+            - name: LAKEFS_DATABASE_CONNECTION_STRING
+              value: postgres://postgres:password@localhost:5432/postgres?sslmode=disable
+            - name: LAKEFS_AUTH_ENCRYPT_SECRET_KEY
+              value: asdjfhjaskdhuioaweyuiorasdsjbaskcbkj
+            - name: LAKEFS_BLOCKSTORE_TYPE
+              value: local
+            - name: LAKEFS_BLOCKSTORE_LOCAL_PATH
+              value: /lakefs/data
+        
+        - name: lakefs-postgres
+          image: postgres:11
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_PASSWORD
+              value: password
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: lakefs-postgredb
+      volumes:
+        
+        - name: lakefs-postgredb
+        - name: lakefs-local-data
