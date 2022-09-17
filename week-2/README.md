@@ -29,7 +29,7 @@ Access UI and API
 
 ```
 kubectl port-forward svc/minio-ui 9001:9001
-kubectl port-forward svc/minio-ui 9000:9000
+kubectl port-forward svc/minio-api 9000:9000
 ```
 
 # MINIO Client 
@@ -97,6 +97,7 @@ dvc push
 - https://dvc.org/doc/start/data-management
 - https://github.com/iterative/dataset-registry
 
+
 # Labeling 
 
 Install label-studio in docker
@@ -123,7 +124,6 @@ Generate template
 
 ```
 helm template my-lakefs lakefs/lakefs > lakefs-deploy.yaml
-
 ```
 
 Deploy lakefs on k8s 
