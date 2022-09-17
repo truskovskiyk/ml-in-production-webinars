@@ -1,9 +1,10 @@
-name: week-1-ci
+name: week-2-ci
 
 on:
   push:
     branches:
       - 'main'
+      - 'week-2'      
 env:
 
 
