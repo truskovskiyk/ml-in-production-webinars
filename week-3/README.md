@@ -1,51 +1,33 @@
 # Project stucture 
 
-Python project 
-
-```
-git clone https://github.com/navdeep-G/samplemod.git
-```
-
-ML project 
-```
-git clone https://github.com/ashleve/lightning-hydra-template.git
-```
+[Python project](https://github.com/navdeep-G/samplemod.git)
+[ML project](https://github.com/ashleve/lightning-hydra-template.git)
 
 # Configuration 
 
-
-```
-```
+[hydra](https://hydra.cc/docs/intro/)
 
 
 # Example 
 
 
-```
-export CUDA_VISIBLE_DEVICES=3
-python train.py load-imdb-data data
-python train.py train ./conf/example.json
-```
+[nlp-sample](./)
 
 https://madewithml.com/courses/mlops/testing/
 
 
-# WandB
+# Experiments
 
 https://neptune.ai/blog/best-ml-experiment-tracking-tools
-https://github.com/QData/TextAttack
 
-```
-```
-
-# AIM 
+## AIM 
 
 https://neptune.ai/blog/best-ml-experiment-tracking-tools
 https://github.com/aimhubio/aim
 
 
 ```
-
+kubectl create -f 
 kubectl port-forward svc/my-aim-service  8080:80 --namespace default
 ```
 

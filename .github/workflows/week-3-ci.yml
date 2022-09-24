@@ -47,6 +47,10 @@ jobs:
         run: |
           docker build -f week-3/nlp-sample/Dockerfile -t nlp-sample:latest week-3/nlp-sample
 
+      - name: Test style
+        run: |
+          docker run nlp-sample:latest make lint
+
       - name: Test code
         run: |
           docker run nlp-sample:latest make test_code

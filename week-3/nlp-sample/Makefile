@@ -29,9 +29,8 @@ test_all:
 train_example:
 	export WANDB_PROJECT=nlp-sample
 	python nlp_sample/cli.py load-cola-data ./data
-	python nlp_sample/cli.py train ./conf/fast.json
-	python nlp_sample/cli.py upload-to-registry example_model results
-	# python nlp_sample/cli.py load-from-registry example_model:latest example_model
+	python nlp_sample/cli.py train ./conf/example.json
+	python nlp_sample/cli.py upload-to-registry example_model /tmp/results
 
 train_fast_ci:
 	python nlp_sample/cli.py load-cola-data ./data
