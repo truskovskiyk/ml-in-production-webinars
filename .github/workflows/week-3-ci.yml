@@ -1,4 +1,4 @@
-name: week-4-ci
+name: week-3-ci
 
 on:
   push:
