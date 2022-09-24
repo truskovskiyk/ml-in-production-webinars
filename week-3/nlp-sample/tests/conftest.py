@@ -1,11 +1,12 @@
-import pytest
 from pathlib import Path
-
 from typing import Tuple
-import pandas as pd
+
 import great_expectations as ge
-from nlp_sample.data import load_cola_data
+import pandas as pd
+import pytest
 from great_expectations.dataset.pandas_dataset import PandasDataset
+
+from nlp_sample.data import load_cola_data
 
 
 @pytest.fixture(scope="session")

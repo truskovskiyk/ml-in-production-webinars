@@ -1,8 +1,8 @@
+import logging
+
 import torch
 from torch.nn.functional import softmax
-from transformers import AutoTokenizer
-from transformers import AutoModelForSequenceClassification
-import logging
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 logger = logging.getLogger()
 

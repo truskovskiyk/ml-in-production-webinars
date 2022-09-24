@@ -1,19 +1,11 @@
-import pytest
-from nlp_sample.train import get_config, read_dataset, get_models, process_dataset, get_trainer, train
-from nlp_sample.config import ModelArguments, DataTrainingArguments
-from transformers import (
-    AutoConfig,
-    AutoModelForSequenceClassification,
-    AutoTokenizer,
-    DataCollatorWithPadding,
-    EvalPrediction,
-    HfArgumentParser,
-    Trainer,
-    TrainingArguments,
-    default_data_collator,
-    set_seed,
-)
 from pathlib import Path
+
+import pytest
+from transformers import Trainer, TrainingArguments
+
+from nlp_sample.config import DataTrainingArguments, ModelArguments
+from nlp_sample.train import (get_models, get_trainer, process_dataset,
+                              read_dataset, train)
 
 
 @pytest.fixture()
@@ -69,7 +61,6 @@ def config_path() -> Path:
     return "tests/data/test_config.json"
 
 
-
 def test_minimum_functionality():
     pass
 
@@ -96,4 +87,3 @@ def test_train_to_completion(config_path: Path):
     assert (result_path / "training_args.bin").exists()
     assert (result_path / "all_results.json").exists()
     assert (result_path / "README.md").exists()
-

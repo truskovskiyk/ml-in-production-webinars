@@ -1,8 +1,8 @@
 import typer
 
-from nlp_sample.train import train
 from nlp_sample.data import load_cola_data
-from nlp_sample.utils import upload_to_registry, load_from_registry
+from nlp_sample.train import train
+from nlp_sample.utils import load_from_registry, upload_to_registry
 
 app = typer.Typer()
 app.command()(train)

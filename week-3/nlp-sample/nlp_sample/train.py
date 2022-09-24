@@ -2,37 +2,19 @@ import logging
 import os
 import random
 import sys
-from dataclasses import dataclass, field, asdict
-from typing import Optional
-from pathlib import Path
-from datasets.arrow_reader import ArrowReader
-import typer
-import datasets
-import numpy as np
-from datasets import load_dataset
-import transformers
-from transformers import (
-    AutoConfig,
-    AutoModelForSequenceClassification,
-    AutoTokenizer,
-    DataCollatorWithPadding,
-    EvalPrediction,
-    HfArgumentParser,
-    Trainer,
-    TrainingArguments,
-    default_data_collator,
-    set_seed,
-)
-
-# import wandb
-
 from functools import partial
+from pathlib import Path
+
+from datasets import load_dataset
+from transformers import (AutoConfig, AutoModelForSequenceClassification,
+                          AutoTokenizer, HfArgumentParser, Trainer,
+                          TrainingArguments, default_data_collator, set_seed)
+
+from nlp_sample.config import DataTrainingArguments, ModelArguments
+from nlp_sample.utils import (compute_metrics, preprocess_function_examples,
+                              setup_logger)
 
 logger = logging.getLogger(__name__)
-
-from nlp_sample.data import load_cola_data
-from nlp_sample.config import DataTrainingArguments, ModelArguments
-from nlp_sample.utils import compute_metrics, preprocess_function_examples, setup_logger
 
 
 def get_args():
@@ -201,8 +183,6 @@ def train(config_path: Path):
         "language": "en",
         "dataset_tags": "cola",
     }
-    
-    
+
     trainer.create_model_card(**kwargs)
     logger.info(f"Generate model card {training_args.output_dir}/README.md")
-

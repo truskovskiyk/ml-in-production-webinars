@@ -1,41 +1,23 @@
 import logging
-import os
-import random
 import sys
-from dataclasses import dataclass, field, asdict
-from typing import Optional
 from pathlib import Path
-from datasets.arrow_reader import ArrowReader
-import typer
-from sklearn.metrics import f1_score
-from sklearn.metrics import fbeta_score
+from typing import Dict
+
 import datasets
 import numpy as np
-from datasets import load_dataset
-import typer
 import transformers
-from typing import Dict
-from transformers import (
-    AutoConfig,
-    AutoModelForSequenceClassification,
-    AutoTokenizer,
-    DataCollatorWithPadding,
-    EvalPrediction,
-    HfArgumentParser,
-    Trainer,
-    TrainingArguments,
-    default_data_collator,
-    set_seed,
-)
 import wandb
-
-from functools import partial
+from sklearn.metrics import f1_score, fbeta_score
+from transformers import EvalPrediction
 
 
 def compute_metrics(p: EvalPrediction) -> Dict[str, float]:
     preds = p.predictions
     preds = np.argmax(preds, axis=1)
-    return {"f1": f1_score(y_true=p.label_ids, y_pred=preds), "f0.5": fbeta_score(y_true=p.label_ids, y_pred=preds, beta=0.5)}
+    return {
+        "f1": f1_score(y_true=p.label_ids, y_pred=preds),
+        "f0.5": fbeta_score(y_true=p.label_ids, y_pred=preds, beta=0.5),
+    }
 
 
 def preprocess_function_examples(examples, tokenizer, padding, max_seq_length, label_to_id):
@@ -44,7 +26,7 @@ def preprocess_function_examples(examples, tokenizer, padding, max_seq_length, l
     result = tokenizer(*args, padding=padding, max_length=max_seq_length, truncation=True)
     # Map labels to IDs (not necessary for GLUE tasks)
     if label_to_id is not None and "label" in examples:
-        result["label"] = [(label_to_id[l] if l != -1 else -1) for l in examples["label"]]
+        result["label"] = [(label_to_id[label] if label != -1 else -1) for label in examples["label"]]
     return result
 
 
@@ -65,14 +47,14 @@ def setup_logger(logger):
 
 
 def upload_to_registry(model_name: str, model_path: Path):
-    with wandb.init() as r:
+    with wandb.init() as _:
         art = wandb.Artifact(model_name, type="model")
         art.add_file(model_path / "config.json")
-        art.add_file(model_path/ "pytorch_model.bin")
+        art.add_file(model_path / "pytorch_model.bin")
         art.add_file(model_path / "tokenizer.json")
-        art.add_file(model_path /"tokenizer_config.json")
-        art.add_file(model_path/ "special_tokens_map.json")
-        art.add_file(model_path/ "README.md")
+        art.add_file(model_path / "tokenizer_config.json")
+        art.add_file(model_path / "special_tokens_map.json")
+        art.add_file(model_path / "README.md")
         wandb.log_artifact(art)
 
 
@@ -81,4 +63,3 @@ def load_from_registry(model_name: str, model_path: Path):
         artifact = run.use_artifact(model_name, type="model")
         artifact_dir = artifact.download(root=model_path)
         print(f"{artifact_dir}")
-

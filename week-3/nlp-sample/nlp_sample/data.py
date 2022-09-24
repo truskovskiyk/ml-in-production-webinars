@@ -1,7 +1,9 @@
 from pathlib import Path
-from datasets.arrow_reader import ArrowReader
+
 from datasets import load_dataset
+from datasets.arrow_reader import ArrowReader
 from sklearn.model_selection import train_test_split
+
 
 def load_cola_data(path_to_save: Path, random_state: int = 42):
 
