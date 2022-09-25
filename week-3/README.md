@@ -11,9 +11,7 @@
 # Example 
 
 
-[nlp-sample](./)
-
-https://madewithml.com/courses/mlops/testing/
+[nlp-sample](./nlp-sample)
 
 
 # Experiments
@@ -27,10 +25,9 @@ https://github.com/aimhubio/aim
 
 
 ```
-kubectl create -f 
+kubectl create -f aim/deployment-aim-web.yaml
 kubectl port-forward svc/my-aim-service  8080:80 --namespace default
 ```
-
 
 
 # Model card
