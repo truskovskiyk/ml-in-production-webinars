@@ -68,18 +68,18 @@ jobs:
           docker run nlp-sample:latest make test_all
 
 
-      # - name: Push
-      #   uses: docker/build-push-action@v2
-      #   with:
-      #     context: week-3/nlp-sample
-      #     file: week-3/nlp-sample/Dockerfile
-      #     push: true
-      #     tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_MAIN_NAME }}:${{ env.IMAGE_MAIN_TAG }}
-      #     cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_MAIN_NAME }}:buildcache
-      #     cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_MAIN_NAME }}:buildcache,mode=max
+      - name: Push
+        uses: docker/build-push-action@v2
+        with:
+          context: week-3/nlp-sample
+          file: week-3/nlp-sample/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_MAIN_NAME }}:${{ env.IMAGE_MAIN_TAG }}
+          cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_MAIN_NAME }}:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_MAIN_NAME }}:buildcache,mode=max
 
   cml-test:
-    # needs: test
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
