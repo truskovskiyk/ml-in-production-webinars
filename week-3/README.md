@@ -38,17 +38,3 @@ kubectl port-forward svc/my-aim-service  8080:80 --namespace default
 https://github.com/ivylee/model-cards-and-datasheets
 https://arxiv.org/abs/1810.03993
 
-```
-pip install model-card-toolkit
-```
-
-
-# Tests 
-
-
-# K8S 
-
-
-```
-kind create cluster --name ml-in-production-course-week-1
-```
