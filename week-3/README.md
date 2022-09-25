@@ -32,6 +32,6 @@ kubectl port-forward svc/my-aim-service  8080:80 --namespace default
 
 # Model card
 
-https://github.com/ivylee/model-cards-and-datasheets
-https://arxiv.org/abs/1810.03993
+- https://github.com/ivylee/model-cards-and-datasheets
+- https://arxiv.org/abs/1810.03993
 
