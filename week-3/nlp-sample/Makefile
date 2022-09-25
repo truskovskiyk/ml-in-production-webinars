@@ -35,5 +35,5 @@ train_example:
 train_fast_ci:
 	python nlp_sample/cli.py load-cola-data ./data
 	python nlp_sample/cli.py train ./conf/fast.json
-	python nlp_sample/cli.py upload-to-registry fast-model results
+	python nlp_sample/cli.py upload-to-registry fast-model /tmp/results
 	
