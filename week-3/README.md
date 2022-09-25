@@ -1,14 +1,14 @@
 # Project stucture 
 
-[Python project](https://github.com/navdeep-G/samplemod.git)
-[ML project](https://github.com/ashleve/lightning-hydra-template.git)
+- [Python project](https://github.com/navdeep-G/samplemod.git)
+- [ML project](https://github.com/ashleve/lightning-hydra-template.git)
 
 # Configuration 
 
 [hydra](https://hydra.cc/docs/intro/)
 
 
-# Example 
+# Example ML model with testing
 
 
 [nlp-sample](./nlp-sample)
