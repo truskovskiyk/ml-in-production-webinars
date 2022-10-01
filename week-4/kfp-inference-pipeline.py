@@ -1,15 +1,15 @@
+import os
 import uuid
+from typing import Optional
 
 import kfp
 import typer
 from kfp import dsl
-from typing import Optional
 from kubernetes.client.models import V1EnvVar
-import os 
 
 IMAGE = "kyrylprojector/nlp-sample:latest"
-WANDB_PROJECT = os.getenv('WANDB_PROJECT')
-WANDB_API_KEY = os.getenv('WANDB_API_KEY')
+WANDB_PROJECT = os.getenv("WANDB_PROJECT")
+WANDB_API_KEY = os.getenv("WANDB_API_KEY")
 
 
 @dsl.pipeline(name="nlp_inference_pipeline", description="nlp_inference_pipeline")
@@ -19,9 +19,7 @@ def nlp_inference_pipeline():
         name="load_data",
         command="python nlp_sample/cli.py load-cola-data /tmp/data/".split(),
         image=IMAGE,
-        file_outputs={
-            "test": "/tmp/data/test.csv"
-            },
+        file_outputs={"test": "/tmp/data/test.csv"},
     )
     load_data.execution_options.caching_strategy.max_cache_staleness = "P0D"
 
@@ -33,32 +31,31 @@ def nlp_inference_pipeline():
             "config": "/tmp/results/config.json",
             "model": "/tmp/results/pytorch_model.bin",
             "tokenizer": "/tmp/results/tokenizer.json",
-            },
-    )    
+        },
+    )
     load_model.execution_options.caching_strategy.max_cache_staleness = "P0D"
-
 
     run_inference = dsl.ContainerOp(
         name="run_inference",
         command="python nlp_sample/cli.py run-inference-on-dataframe /tmp/data/test.csv /tmp/results/ /tmp/pred.csv".split(),
         image=IMAGE,
         artifact_argument_paths=[
-            dsl.InputArgumentPath(load_model.outputs['config'], path="/tmp/results/config.json"),
-            dsl.InputArgumentPath(load_model.outputs['model'], path="/tmp/results/pytorch_model.bin"),
-            dsl.InputArgumentPath(load_model.outputs['tokenizer'], path="/tmp/results/tokenizer.json"),
-            dsl.InputArgumentPath(load_data.outputs['test'], path="/tmp/data/test.csv"),
+            dsl.InputArgumentPath(load_model.outputs["config"], path="/tmp/results/config.json"),
+            dsl.InputArgumentPath(load_model.outputs["model"], path="/tmp/results/pytorch_model.bin"),
+            dsl.InputArgumentPath(load_model.outputs["tokenizer"], path="/tmp/results/tokenizer.json"),
+            dsl.InputArgumentPath(load_data.outputs["test"], path="/tmp/data/test.csv"),
         ],
         file_outputs={
             "pred": "/tmp/pred.csv",
-            },        
-    )    
+        },
+    )
 
-    env_var_project = V1EnvVar(name='WANDB_PROJECT', value=WANDB_PROJECT)
+    env_var_project = V1EnvVar(name="WANDB_PROJECT", value=WANDB_PROJECT)
     load_model = load_model.add_env_variable(env_var_project)
 
     # TODO: should be a secret, but out of scope for this webinar
-    env_var_password = V1EnvVar(name='WANDB_API_KEY', value=WANDB_API_KEY)
-    load_model = load_model.add_env_variable(env_var_password) 
+    env_var_password = V1EnvVar(name="WANDB_API_KEY", value=WANDB_API_KEY)
+    load_model = load_model.add_env_variable(env_var_password)
 
 
 def compile_pipeline() -> str:
