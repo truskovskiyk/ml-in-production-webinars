@@ -1,0 +1,4 @@
+kfp
+apache-airflow==2.3.0
+apache-airflow-providers-cncf-kubernetes==1.0.0
+cached-property==1.5.2
