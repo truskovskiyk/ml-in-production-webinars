@@ -91,6 +91,8 @@ kubectl create -f airflow-volumes.yaml
 
 4. Read to run pipelines
 
+- https://madewithml.com/courses/mlops/orchestration/
+
 
 References:
 
