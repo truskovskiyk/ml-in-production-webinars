@@ -10,6 +10,10 @@ make build
 
 ```
 make run_dev
+cd /main 
+export PYTHONPATH=.
+export WANDB_PROJECT=nlp-sample
+export WANDB_API_KEY=****************
 ```
 
 ## Test
