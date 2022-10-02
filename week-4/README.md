@@ -44,7 +44,7 @@ Access UI and minio
 
 ```
 kubectl port-forward --address=0.0.0.0 svc/minio-service 9000:9000 -n kubeflow
-kubectl port-forward --address=0.0.0.0 svc/ml-pipeline-ui 8080:80 -n kubeflow
+kubectl port-forward --address=0.0.0.0 svc/ml-pipeline-ui 8888:80 -n kubeflow
 ```
 
 

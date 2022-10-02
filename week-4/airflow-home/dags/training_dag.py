@@ -1,14 +1,10 @@
 from datetime import datetime
 
 from airflow import DAG
-from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import \
-    KubernetesPodOperator
+from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
 from kubernetes.client import models as k8s
 
-volume = k8s.V1Volume(
-    name="training-storage",
-    persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="training-storage"),
-)
+volume = k8s.V1Volume(name="training-storage", persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="training-storage"),)
 volume_mount = k8s.V1VolumeMount(name="training-storage", mount_path="/tmp/", sub_path=None)
 
 with DAG(start_date=datetime(2021, 1, 1), catchup=False, schedule_interval=None, dag_id="training_dag") as dag:
@@ -16,7 +12,7 @@ with DAG(start_date=datetime(2021, 1, 1), catchup=False, schedule_interval=None,
     clean_storage_before_start = KubernetesPodOperator(
         name="clean_storage_before_start",
         image="kyrylprojector/nlp-sample:latest",
-        cmds=["rm", "-rf", "/tmp/data/"],
+        cmds=["rm", "-rf", "/tmp/"],
         task_id="clean_storage_before_start",
         in_cluster=False,
         namespace="default",
@@ -61,7 +57,7 @@ with DAG(start_date=datetime(2021, 1, 1), catchup=False, schedule_interval=None,
     clean_up = KubernetesPodOperator(
         name="clean_up",
         image="kyrylprojector/nlp-sample:latest",
-        cmds=["rm", "-rf", "/tmp/data/"],
+        cmds=["rm", "-rf", "/tmp/"],
         task_id="clean_up",
         in_cluster=False,
         namespace="default",
