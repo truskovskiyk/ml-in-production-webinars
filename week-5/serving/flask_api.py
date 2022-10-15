@@ -1,13 +1,13 @@
 from flask import Flask, jsonify, request
-from qqp_inference.model import PythonPredictor
+from serving.predictor import Predictor
 
 app = Flask(__name__)
-predictor = PythonPredictor.create_for_demo()
+predictor = Predictor.default_from_model_registry()
 
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    payload = request.json
+    payload = request.json['text']
     result = predictor.predict(payload)
     return jsonify(result)
 

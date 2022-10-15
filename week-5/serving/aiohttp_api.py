@@ -4,7 +4,7 @@ from aiohttp import web
 
 logger = logging.getLogger()
 
-from predictor_nlp import Predictor
+from serving.predictor import Predictor
 
 
 async def handle_predict(request: web.Request) -> web.Response:
@@ -18,7 +18,7 @@ async def handle_predict(request: web.Request) -> web.Response:
 
 
 app = web.Application()
-app["predictor"] = Predictor()
+app["predictor"] = Predictor.default_from_model_registry()
 app.router.add_post("/predict", handle_predict)
 
 
