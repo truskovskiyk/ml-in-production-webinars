@@ -17,7 +17,7 @@ class Score:
 class SeldonAPI:
     def __init__(self, model_id: Optional[str] = None):
         self.predictor = Predictor.default_from_model_registry(model_id=model_id)
-        self.score = Score(tp=0, fp=0, tn=0, fn=0)
+        self.scores = Score(tp=0, fp=0, tn=0, fn=0)
         self._run_time = None
 
     def predict(self, text, features_names: List[str]):
