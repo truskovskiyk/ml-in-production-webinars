@@ -6,6 +6,13 @@ from sklearn.metrics import f1_score
 
 logger = logging.getLogger()
 
+class Score:
+    def __init__(self, TP, FP, TN, FN):
+        self.TP = TP
+        self.FP = FP
+        self.TN = TN
+        self.FN = FN
+        
 class SeldonAPI:
     def __init__(self, model_id: Optional[str] = None):
         self.predictor = Predictor.default_from_model_registry(model_id=model_id)
@@ -36,7 +43,7 @@ class SeldonAPI:
         logger.info("truth")
         logger.info(truth)
 
-        results = self.predict(features)
+        results = self.predict(features, feature_names)
         preds = np.argmax(results, axis=1)
 
         f1 = f1_score(y_true=truth, y_pred=preds),

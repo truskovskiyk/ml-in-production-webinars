@@ -12,7 +12,7 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: kyrylprojector/app-seldon:latest
+        - image: kyrylprojector/app-seldon-monitoring:latest
           name: classifier
           env:
           - name: GUNICORN_THREADS
@@ -24,18 +24,18 @@ spec:
           - name: SELDON_DEBUG
             value: '1'          
           - name: WANDB_API_KEY
-            value: "*********"             
+            value: 228f8278fb1a0a60618d3e7b2461c1ced7ca6f8d             
           imagePullPolicy: Always
 
     graph:
       name: classifier
       type: MODEL
-      # parameters: [
-      #   {
-      #     "name": "model_load_path",
-      #     "type": "STRING",
-      #     "value": "model-artifacts/"
-      #   }
-      # ]
+      parameters: [
+        {
+          "name": "model_id",
+          "type": "STRING",
+          "value": "truskovskiyk/nlp-sample/kfp-pipeline:latest"
+        }
+      ]
     name: model
     replicas: 1

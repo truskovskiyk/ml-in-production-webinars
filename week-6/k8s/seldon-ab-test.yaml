@@ -10,7 +10,7 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: kyrylprojector/app-seldon:latest
+        - image: kyrylprojector/app-seldon-monitoring:latest
           name: classifier
           env:
           - name: GUNICORN_THREADS
@@ -39,7 +39,7 @@ spec:
 
   - componentSpecs:
     - spec:
-        - image: kyrylprojector/app-seldon:latest
+        - image: kyrylprojector/app-seldon-monitoring:latest
           name: classifier
           env:
           - name: GUNICORN_THREADS
@@ -60,7 +60,7 @@ spec:
       parameters:
       - name: model_id
         type: STRING
-        value: truskovskiyk/nlp-sample/airflow-pipeline:v0
+        value: truskovskiyk/nlp-sample/good-model:latest
 
     name: shadow
     replicas: 1

@@ -2,24 +2,26 @@ import numpy as np
 from seldon_core.seldon_client import SeldonClient
 import time 
 import asyncio
+import requests
 
 URL = "54.221.129.217:7777"
-NS = "default"
-DEPLOYMENT = "nlp-sample"
-
-# async def send_request_async(n_requests: int):
-#     sc = SeldonClient(namespace=NS, gateway_endpoint=URL, deployment_name=DEPLOYMENT, payload_type="ndarray")
-#     for _ in range(n_requests):
-#         y_res = sc.predict(data=np.array(["this is an example"]))
-#         print(f"Raw Response: {y_res.response}\n")
-#         # print(f"Predicted Class: {y_res.response['data']['ndarray']}")
+PRED_URL = "http://54.221.129.217:7777/seldon/default/nlp-sample/api/v1.0/predictions"
+FEEDBACK_URL = "http://54.221.129.217:7777/seldon/default/nlp-sample/api/v1.0/feedback"
 
 
 def send_request_sync():
-    sc = SeldonClient(namespace=NS, gateway_endpoint=URL, deployment_name=DEPLOYMENT, payload_type="ndarray")
-    y_res = sc.predict(data=np.array(["this is an example this is an example this is an example this is an example"] * 32))
-    print(f"Raw Response: {y_res.response}")
-        # print(f"Predicted Class: {y_res.response['data']['ndarray']}")
+    data = {"data": {"ndarray": ["this is an example"]}}
+    res = requests.post(PRED_URL, json=data)
+    print(res)
+
+
+def send_feedback_sync():
+    data = {"request": {"data": {"ndarray": ["this is an example"]}}, "truth":{"data": {"ndarray": [1]}}}
+    res = requests.post(FEEDBACK_URL, json=data)
+    print(res)
+    # sc = SeldonClient(namespace=NS, gateway_endpoint=URL, deployment_name=DEPLOYMENT, payload_type="ndarray")
+    # y_res = sc.predict(data=np.array(["this is an example this is an example this is an example this is an example"] * 32))
+    # print(f"Raw Response: {y_res.response}")
 
 # async def main():
 #     requests = [send_request(n_requests=10) for _ in range(10)]
@@ -40,4 +42,5 @@ def send_request_sync():
 #     print(f"{__file__} executed in {elapsed:0.2f} seconds.")
 
 if __name__ == '__main__':
-    send_request_sync()
+    # send_request_sync()
+    send_feedback_sync()
