@@ -65,16 +65,6 @@ kubectl port-forward  --address 0.0.0.0 -n ambassador svc/ambassador 7777:80
 kubectl port-forward --address 0.0.0.0 svc/seldon-core-analytics-grafana -n seldon-system 3000:80    
 ```
 
-## Simple example
-```
-kubectl create -f k8s/sk.yaml
-
-open http://IP:7777/seldon/default/iris-model/api/v1.0/doc/#/
-{ "data": { "ndarray": [[1,2,3,4]] } }
-
-curl -X POST "http://IP:7777/seldon/default/iris-model/api/v1.0/predictions" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"data\":{\"ndarray\":[[1,2,3,4]]}}"
-```
-
 ## Custom example
 ```
 kubectl create -f k8s/seldon-custom.yaml
@@ -90,5 +80,5 @@ curl -X POST "http://IP:7777/seldon/default/nlp-sample/api/v1.0/predictions" -H 
 ## Reference 
 
 - https://github.com/data-max-hq/ab-testing-in-ml
-
+- 
 

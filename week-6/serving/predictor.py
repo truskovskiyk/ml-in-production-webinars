@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 import pandas as pd
 import torch
@@ -26,10 +26,11 @@ def load_from_registry(model_name: str, model_path: Path):
 
 
 class Predictor:
-    def __init__(self, model_load_path: str):
+    def __init__(self, model_load_path: str, model_id: str):
         self.tokenizer = AutoTokenizer.from_pretrained(model_load_path)
         self.model = AutoModelForSequenceClassification.from_pretrained(model_load_path)
         self.model.eval()
+        self.model_id = model_id
 
     @torch.no_grad()
     def predict(self, text: List[str]):
@@ -38,12 +39,15 @@ class Predictor:
         return softmax(bert_outputs).numpy()
 
     @classmethod
-    def default_from_model_registry(cls) -> "Predictor":
+    def default_from_model_registry(cls, model_id: Optional[str] = None) -> "Predictor":
+        model_id = model_id if model_id is not None else MODEL_ID
+        logger.info(f"Using model_id = {model_id}")
+
         with FileLock(MODEL_LOCK):
             if not (Path(MODEL_PATH) / "pytorch_model.bin").exists():
-                load_from_registry(model_name=MODEL_ID, model_path=MODEL_PATH)
+                load_from_registry(model_name=model_id, model_path=MODEL_PATH)
 
-        return cls(model_load_path=MODEL_PATH)
+        return cls(model_load_path=MODEL_PATH, model_id=model_id)
 
     def run_inference_on_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
         correct_sentence_conf = []
