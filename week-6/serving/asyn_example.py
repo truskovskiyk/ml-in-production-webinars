@@ -14,22 +14,21 @@ async def count():
 #     await count()
     
 
-# async def main():
-#     # await count()
-#     # await count()
-#     # await count()
-#     await asyncio.gather(count(), count(), count())
-
 async def main():
-    loop = asyncio.get_event_loop()
-    t1 = loop.create_task(count())
-    t2 = loop.create_task(count())
-    t3 = loop.create_task(count())
+    # await count()
+    # await count()
+    # await count()
+    await asyncio.gather(count(), count(), count())
 
-    await t1
-    await t2
-    await t3
-    # await asyncio.gather(count(), count(), count())
+# async def main():
+#     loop = asyncio.get_event_loop()
+#     t1 = loop.create_task(count())
+#     t2 = loop.create_task(count())
+#     t3 = loop.create_task(count())
+
+#     await t1
+#     await t2
+#     await t3
 
 def run_example():
     s = time.perf_counter()

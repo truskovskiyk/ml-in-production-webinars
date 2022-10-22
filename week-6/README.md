@@ -63,6 +63,7 @@ helm install seldon-core-analytics seldon-core-analytics --repo https://storage.
 ```
 kubectl port-forward  --address 0.0.0.0 -n ambassador svc/ambassador 7777:80
 kubectl port-forward --address 0.0.0.0 svc/seldon-core-analytics-grafana -n seldon-system 3000:80    
+kubectl port-forward --address 0.0.0.0 svc/seldon-core-analytics-prometheus-seldon -n seldon-system 5000:80
 ```
 
 ## Custom example
