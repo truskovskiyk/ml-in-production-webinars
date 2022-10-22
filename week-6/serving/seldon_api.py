@@ -30,6 +30,12 @@ class SeldonAPI:
 
 
     def send_feedback(self, features, feature_names, reward, truth, routing=""):
+        logger.info("features")
+        logger.info(features)
+        
+        logger.info("truth")
+        logger.info(truth)
+
         results = self.predict(features)
         preds = np.argmax(results, axis=1)
 
