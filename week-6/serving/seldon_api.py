@@ -39,6 +39,6 @@ class SeldonAPI:
 
     def metrics(self):
         return [
-            {"type": "GAUGE", "key": "gauge_runtime", "value": self._run_time}
+            {"type": "GAUGE", "key": "gauge_runtime", "value": self._run_time},
             {"type": "GAUGE", "key": f"gauge_f1", "value": self._run_f1},
         ]        
