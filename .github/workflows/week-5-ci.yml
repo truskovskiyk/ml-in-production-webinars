@@ -53,9 +53,3 @@ jobs:
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/app-seldon:latest
           cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/app-seldon:buildcache
           cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/app-seldon:buildcache,mode=max
-
-      - name: Authenticate to Google Cloud
-        id: 'auth'
-        uses: 'google-github-actions/auth@v0'
-        with:
-          credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
