@@ -7,17 +7,16 @@ from sklearn.metrics import f1_score
 logger = logging.getLogger()
 
 class Score:
-    def __init__(self, TP, FP, TN, FN):
-        self.TP = TP
-        self.FP = FP
-        self.TN = TN
-        self.FN = FN
+    def __init__(self, tp, fp, tn, fn):
+        self.tp = tp
+        self.fp = fp
+        self.tn = tn
+        self.fn = fn
         
 class SeldonAPI:
     def __init__(self, model_id: Optional[str] = None):
         self.predictor = Predictor.default_from_model_registry(model_id=model_id)
-
-        self._run_f1 = None
+        self.score = Score(tp=0, fp=0, tn=0, fn=0)
         self._run_time = None
 
     def predict(self, text, features_names: List[str]):
@@ -32,10 +31,6 @@ class SeldonAPI:
         return results
 
 
-    def tags(self):
-        return {"version": self.predictor.model_id}
-
-
     def send_feedback(self, features, feature_names, reward, truth, routing=""):
         logger.info("features")
         logger.info(features)
@@ -44,17 +39,28 @@ class SeldonAPI:
         logger.info(truth)
 
         results = self.predict(features, feature_names)
-        preds = np.argmax(results, axis=1)
+        predicted = np.argmax(results, axis=1)
 
-        f1 = f1_score(y_true=truth, y_pred=preds),
-        self._run_f1 = f1
-        return [{'f1': f1}]  
+
+        if int(truth[0]) == 1:
+            if int(predicted[0]) == int(truth[0]):
+                self.scores.tp += 1
+            else:
+                self.scores.fn += 1
+        else:
+            if int(predicted[0]) == int(truth[0]):
+                self.scores.tn += 1
+            else:
+                self.scores.fp += 1
+
+        return []
 
     def metrics(self):
-        if self._run_f1 is None:
-            return [{"type": "GAUGE", "key": "gauge_runtime", "value": self._run_time}]
-        else:
-            return [
-                {"type": "GAUGE", "key": "gauge_runtime", "value": self._run_time},
-                {"type": "GAUGE", "key": f"gauge_f1", "value": self._run_f1},
-            ]        
+
+        return [
+            {"type": "GAUGE", "key": "gauge_runtime", "value": self._run_time},
+            {"type": "GAUGE", "key": f"true_pos", "value": self.scores.tp},
+            {"type": "GAUGE", "key": f"true_neg", "value": self.scores.fn},
+            {"type": "GAUGE", "key": f"false_pos", "value": self.scores.fn},
+            {"type": "GAUGE", "key": f"false_neg", "value": self.scores.fp},
+        ]        
