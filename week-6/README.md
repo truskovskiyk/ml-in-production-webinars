@@ -78,8 +78,20 @@ curl -X POST "http://IP:7777/seldon/default/nlp-sample/api/v1.0/predictions" -H 
 
 ```
 
+## Custom example
+```
+kubectl create -f k8s/seldon-custom.yaml
+
+open http://IP:7777/seldon/default/nlp-sample/api/v1.0/doc/#/
+{ "data": { "ndarray": ["this is an example"] } }
+
+
+curl -X POST "http://IP:7777/seldon/default/nlp-sample/api/v1.0/predictions" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"data\":{\"ndarray\":[\"this is an example\"]}}"
+
+```
+
 ## Reference 
 
 - https://github.com/data-max-hq/ab-testing-in-ml
-- 
+- https://github.com/SeldonIO/seldon-core/tree/master/examples/feedback/reward-accuracy
 

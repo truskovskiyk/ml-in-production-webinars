@@ -24,7 +24,7 @@ spec:
           - name: SELDON_DEBUG
             value: '1'          
           - name: WANDB_API_KEY
-            value: 228f8278fb1a0a60618d3e7b2461c1ced7ca6f8d             
+            value: *********             
           imagePullPolicy: Always
 
     graph:

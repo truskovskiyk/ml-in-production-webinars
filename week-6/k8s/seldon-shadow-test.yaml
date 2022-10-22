@@ -1,7 +1,7 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: nlp-ab-test
+  name: nlp-shadow-test
 spec:
   name: nlp-test
   predictors:
@@ -34,9 +34,6 @@ spec:
       type: MODEL
     name: default
     replicas: 1
-    traffic: 50
-
-
   - componentSpecs:
     - spec:
         containers:
@@ -66,4 +63,4 @@ spec:
       type: MODEL
     name: shadow
     replicas: 1
-    traffic: 50
+    shadow: true
