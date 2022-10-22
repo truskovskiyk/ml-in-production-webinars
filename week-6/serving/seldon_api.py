@@ -3,6 +3,7 @@ from typing import List, Optional
 import time
 from serving.predictor import Predictor
 from sklearn.metrics import f1_score
+import numpy as np
 
 logger = logging.getLogger()
 
