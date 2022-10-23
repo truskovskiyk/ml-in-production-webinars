@@ -4,7 +4,7 @@
 Create kind cluster 
 
 ```
-kind create cluster --name ml-in-production-course-week-6  --image=kindest/node:v1.21.2 --config=k8s/kind.yaml
+kind create cluster --name ml-in-production-course-week-6 --image=kindest/node:v1.21.2 --config=k8s/kind.yaml
 ```
 
 Run k9s 
@@ -39,6 +39,7 @@ Namespace
 
 ```
 kubectl create namespace seldon-system
+kubectl create namespace seldon
 ```
 
 Seldon
@@ -61,33 +62,27 @@ helm install seldon-core-analytics seldon-core-analytics --repo https://storage.
 ## Port forward 
 
 ```
-kubectl port-forward  --address 0.0.0.0 -n ambassador svc/ambassador 7777:80
+kubectl port-forward --address 0.0.0.0 -n ambassador svc/ambassador 7777:80
 kubectl port-forward --address 0.0.0.0 svc/seldon-core-analytics-grafana -n seldon-system 3000:80    
 kubectl port-forward --address 0.0.0.0 svc/seldon-core-analytics-prometheus-seldon -n seldon-system 5000:80
 ```
 
-## Custom example
+## Seldon examples
+
 ```
 kubectl create -f k8s/seldon-custom.yaml
-
-open http://IP:7777/seldon/default/nlp-sample/api/v1.0/doc/#/
-{ "data": { "ndarray": ["this is an example"] } }
-
-
-curl -X POST "http://IP:7777/seldon/default/nlp-sample/api/v1.0/predictions" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"data\":{\"ndarray\":[\"this is an example\"]}}"
-
+kubectl create -f k8s/seldon-ab-test.yaml
+kubectl create -f k8s/seldon-shadow-test.yaml
+kubectl create -f k8s/seldon-autoscaling.yaml
 ```
 
-## Custom example
+## Load testing 
+
+
 ```
-kubectl create -f k8s/seldon-custom.yaml
-
-open http://IP:7777/seldon/default/nlp-sample/api/v1.0/doc/#/
-{ "data": { "ndarray": ["this is an example"] } }
-
-
-curl -X POST "http://IP:7777/seldon/default/nlp-sample/api/v1.0/predictions" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"data\":{\"ndarray\":[\"this is an example\"]}}"
-
+export HOST_NAME=http://54.221.129.217:7777
+export NUM_CLIENTS=10
+locust -f serving/locust_config.py  --host $HOST_NAME -r 1 -u $NUM_CLIENTS
 ```
 
 ## Reference 

@@ -1,12 +1,12 @@
 apiVersion: machinelearning.seldon.io/v1
 kind: SeldonDeployment
 metadata:
-  name: nlp-sample
+  name: nlp-auto-scaling-sample
   namespace: default
 spec:
   annotations:
-    seldon.io/rest-timeout: "60"
-    seldon.io/grpc-timeout: "60"
+    seldon.io/rest-timeout: "6000"
+    seldon.io/grpc-timeout: "6000"
   protocol: seldon
   predictors:
   - componentSpecs:
@@ -26,7 +26,22 @@ spec:
           - name: WANDB_API_KEY
             value: ********
           imagePullPolicy: Always
-
+          resources:
+            requests:
+              cpu: '5'
+              memory: "2Gi"
+            limits:
+              cpu: '5'  
+              memory: "2Gi"           
+        terminationGracePeriodSeconds: 1000          
+      hpaSpec:
+        maxReplicas: 5  
+        metrics:
+        - resource:
+            name: cpu
+            targetAverageUtilization: 1
+          type: Resource
+        minReplicas: 1
     graph:
       name: classifier
       type: MODEL
@@ -34,7 +49,7 @@ spec:
         {
           "name": "model_id",
           "type": "STRING",
-          "value": "truskovskiyk/nlp-sample/kfp-pipeline:latest"
+          "value": "truskovskiyk/nlp-sample/good-model:v0"
         }
       ]
     name: model

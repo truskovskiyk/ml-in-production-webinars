@@ -21,7 +21,7 @@ spec:
           - name: SELDON_DEBUG
             value: '1'          
           - name: WANDB_API_KEY
-            value: *********                       
+            value: ********
     graph:
       children: []
       endpoint:
@@ -50,7 +50,7 @@ spec:
           - name: SELDON_DEBUG
             value: '1'          
           - name: WANDB_API_KEY
-            value: *********                       
+            value: ********
     graph:
       children: []
       endpoint:
