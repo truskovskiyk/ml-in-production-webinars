@@ -1,11 +1,10 @@
-import pandas as pd
-import feast
-from joblib import load
 from typing import List, Optional
 
+import feast
+import pandas as pd
 from fastapi import FastAPI
+from joblib import load
 from pydantic import BaseModel, BaseSettings
-
 
 
 class Settings(BaseSettings):
@@ -19,6 +18,7 @@ class Payload(BaseModel):
 
 class Prediction(BaseModel):
     best_driver_id: Optional[int] = None
+
 
 class DriverRankingModel:
     def __init__(self, model_path: str, fs_repo_path: str):
@@ -41,7 +41,7 @@ class DriverRankingModel:
         df = df.dropna()
         if df.shape[0] == 0:
             return Prediction(best_driver_id=None)
-            
+
         df["prediction"] = self.model.predict(df.dropna())
         best_driver_id = df["driver_id"].iloc[df["prediction"].argmax()]
 
@@ -51,7 +51,6 @@ class DriverRankingModel:
 settings = Settings()
 model = DriverRankingModel(model_path=settings.model_path, fs_repo_path=settings.fs_repo_path)
 app = FastAPI()
-
 
 
 @app.get("/health_check")
