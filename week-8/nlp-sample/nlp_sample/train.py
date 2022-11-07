@@ -6,19 +6,12 @@ from functools import partial
 from pathlib import Path
 
 from datasets import load_dataset
-from transformers import (
-    AutoConfig,
-    AutoModelForSequenceClassification,
-    AutoTokenizer,
-    HfArgumentParser,
-    Trainer,
-    TrainingArguments,
-    default_data_collator,
-    set_seed,
-)
-
 from nlp_sample.config import DataTrainingArguments, ModelArguments
-from nlp_sample.utils import compute_metrics, preprocess_function_examples, setup_logger
+from nlp_sample.utils import (compute_metrics, preprocess_function_examples,
+                              setup_logger)
+from transformers import (AutoConfig, AutoModelForSequenceClassification,
+                          AutoTokenizer, HfArgumentParser, Trainer,
+                          TrainingArguments, default_data_collator, set_seed)
 
 logger = logging.getLogger(__name__)
 
@@ -133,8 +126,8 @@ def get_config(config_path: Path):
     return model_args, data_args, training_args
 
 
-def train(config_path: Path):
-    model_args, data_args, training_args = get_config(config_path)
+def train():
+    model_args, data_args, training_args = get_args()
     setup_logger(logger)
     logger.warning(
         f"Process rank: {training_args.local_rank}, device: {training_args.device}, n_gpu: {training_args.n_gpu}"
@@ -165,9 +158,6 @@ def train(config_path: Path):
         tokenizer=tokenizer,
     )
 
-    # Training
-    # wandb.init(project="my-test-project")
-
     train_result = trainer.train()
     metrics = train_result.metrics
     metrics["train_samples"] = len(train_dataset)
@@ -192,3 +182,7 @@ def train(config_path: Path):
 
     trainer.create_model_card(**kwargs)
     logger.info(f"Generate model card {training_args.output_dir}/README.md")
+
+
+if __name__ == "__main__":
+    train()

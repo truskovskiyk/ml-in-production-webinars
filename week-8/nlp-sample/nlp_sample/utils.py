@@ -6,7 +6,6 @@ from typing import Dict
 import datasets
 import numpy as np
 import transformers
-import wandb
 from sklearn.metrics import f1_score, fbeta_score
 from transformers import EvalPrediction
 
@@ -44,22 +43,3 @@ def setup_logger(logger):
     transformers.utils.logging.set_verbosity(log_level)
     transformers.utils.logging.enable_default_handler()
     transformers.utils.logging.enable_explicit_format()
-
-
-def upload_to_registry(model_name: str, model_path: Path):
-    with wandb.init() as _:
-        art = wandb.Artifact(model_name, type="model")
-        art.add_file(model_path / "config.json")
-        art.add_file(model_path / "pytorch_model.bin")
-        art.add_file(model_path / "tokenizer.json")
-        art.add_file(model_path / "tokenizer_config.json")
-        art.add_file(model_path / "special_tokens_map.json")
-        art.add_file(model_path / "README.md")
-        wandb.log_artifact(art)
-
-
-def load_from_registry(model_name: str, model_path: Path):
-    with wandb.init() as run:
-        artifact = run.use_artifact(model_name, type="model")
-        artifact_dir = artifact.download(root=model_path)
-        print(f"{artifact_dir}")
