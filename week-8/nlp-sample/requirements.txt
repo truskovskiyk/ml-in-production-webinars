@@ -1,0 +1,10 @@
+transformers==4.21.1
+datasets==2.4.0
+typer==0.6.1
+black==22.3.0
+isort==5.10.1
+flake8==5.0.4
+great-expectations==0.15.25
+pytest-cov==3.0.0
+fastapi==0.86.0
+uvicorn==0.18.3
