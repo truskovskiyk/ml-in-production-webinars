@@ -1,0 +1,34 @@
+base_url = "https://not-matthias.github.io/apollo/"
+title = "not-matthias"
+build_search_index = true
+generate_feed = true
+compile_sass = true
+minify_html = true
+
+[markdown]
+highlight_code = true
+highlight_theme = "ayu-dark"
+
+[extra]
+toc = true
+use_cdn = false
+favicon = "/icon/favicon.png"
+theme = "auto"      
+
+menu = [
+    { name = "/posts", url = "/posts", weight = 1 },
+    { name = "/projects", url = "/projects", weight = 2 },
+    { name = "/about", url = "/about", weight = 3 },
+]
+
+socials = [
+    { name = "twitter", url = "https://twitter.com/not_matthias", icon = "twitter" },
+    { name = "github", url = "https=//github.com/not-matthias/", icon = "github" },
+]
+
+custom_css = []
+
+[extra.analytics]
+enabled = true
+goatcounter_user = "your_user"
+goatcounter_host = "example.com"    # default= goatcounter.com

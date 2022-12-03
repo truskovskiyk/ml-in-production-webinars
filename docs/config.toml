@@ -1,0 +1,29 @@
+base_url = "https://truskovskiyk.github.io/"
+title = "truskovskiy"
+build_search_index = true
+generate_feed = true
+compile_sass = true
+minify_html = true
+
+
+theme = "apollo"
+
+[markdown]
+highlight_code = true
+highlight_theme = "ayu-dark"
+
+[extra]
+toc = true
+use_cdn = false
+favicon = "/icon/favicon.png"
+theme = "auto"      
+
+menu = [
+    { name = "/posts", url = "/posts", weight = 1 },
+    { name = "/agenda", url = "/agenda", weight = 2 },
+]
+
+socials = [
+    { name = "twitter", url = "https://twitter.com/truskovskiy", icon = "twitter" },
+    { name = "github", url = "https://github.com/truskovskiyk", icon = "github" },
+]

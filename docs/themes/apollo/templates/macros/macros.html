@@ -1,0 +1,135 @@
+{% macro list_posts(pages) %}
+    <ul>
+    {%- for page in pages %}
+        {%- if page.draft %}
+            {% continue %}
+        {% endif -%}
+
+        <section class="list-item">
+            <h1 class="title">
+                <a href={{ page.permalink }}>{{page.title}}</a>
+            </h1>
+
+            <time>{{ page.date | date(format="%Y-%m-%d") }}</time>
+
+            <br />
+            <div class="description">
+                {% if page.description %}
+                    {{ page.description }}
+                {% elif page.summary %}
+                    {{ page.summary }}&hellip;
+                {% else %}
+                    {% set hide_read_more = true %}
+                {% endif %}
+            </div>
+
+            {% if not hide_read_more %}
+                <a class="readmore" href={{ page.permalink }}>Read more ⟶</a>
+            {% endif %}
+        </section>
+
+    {% endfor -%}
+    </ul>
+{% endmacro list_posts %}
+
+{% macro tags(page, short=false) %}
+    {%- if page.taxonomies and page.taxonomies.tags %}
+        <span class="post-tags-inline">
+            {%- if short %}
+                ::
+                {%- set sep = "," -%}
+            {% else %}
+                :: tags:&nbsp;
+                {%- set sep = "&nbsp;" -%}
+            {% endif -%}
+            {%- for tag in page.taxonomies.tags %}
+                <a class="post-tag" href="{{ get_taxonomy_url(kind='tags', name=tag) | safe }}">#{{ tag }}</a>
+                {%- if not loop.last %}{{ sep | safe }}{% endif -%}
+            {% endfor -%}
+        </span>
+    {% endif -%}
+{% endmacro tags %}
+
+{% macro page_header(title) %}
+    <div class="page-header">
+        {{ title }}<span class="primary-color" style="font-size: 1.6em">.</span>
+    </div>
+{% endmacro content %}
+
+{% macro content(page) %}
+<main>
+    <article>
+        <div class="title">
+            {#<h1 class="title">{{ page.title }}</h1>#}
+            {{ post_macros::page_header(title=page.title) }}
+
+            {% if page.date %}
+                <div class="meta">
+                    Posted on {{ page.date | date(format="%Y-%m-%d") }}
+
+                    {% if page.draft %}
+                        <span class="draft-label">DRAFT</span> 
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+
+        {% if page.extra.tldr %}
+            <div class="tldr">
+                <strong>tl;dr:</strong>
+                {{ page.extra.tldr }}
+            </div>
+        {% endif %}
+
+        {# Optional table of contents #}
+        {% if config.extra.toc | default(value=false) %}
+            {% if page.toc %}
+                <h1>Table of Contents</h1>
+                <ul>
+                {% for h1 in page.toc %}
+                    <li>
+                        <a href="{{ h1.permalink | safe }}">{{ h1.title }}</a>
+                        {% if h1.children %}
+                            <ul>
+                                {% for h2 in h1.children %}
+                                    <li>
+                                        <a href="{{ h2.permalink | safe }}">{{ h2.title }}</a>
+                                    </li>
+
+                                    {% if h2.children %}
+                                    <ul>
+                                        {% for h3 in h2.children %}
+                                            <li>
+                                                <a href="{{ h3.permalink | safe }}">{{ h3.title }}</a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endif %}
+
+        <section class="body">
+            {{ page.content | safe }}
+        </section>
+
+        {% if page.taxonomies and page.taxonomies.tags %}
+            <div class="post-tags">
+                <nav class="nav tags">
+                    <ul class="tags">
+                        {% for tag in page.taxonomies.tags %}
+                            <li><a href={{ get_taxonomy_url(kind='tags', name=tag) | safe }}>{{ tag }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </nav>
+            </div>
+        {% endif %}
+
+    </article>
+</main>
+{% endmacro content %}
