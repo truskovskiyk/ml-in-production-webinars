@@ -104,74 +104,70 @@ jobs:
         run: |
           docker run --rm --name app-ml-test-run kyrylprojector/app-ml:latest
 
-      - name: Run not ok
-        run: |
-          docker run --rm --name app-ml-test-run kyrylprojector/app-ml:latest python -c "import tfsdfsdime; time.sleep(5); print(f'AUC = {0.0001}')"
-
         
-  # k8s-test-deployment-action:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Create k8s Kind Cluster
-  #       uses: helm/kind-action@v1.4.0
+  k8s-test-deployment-action:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create k8s Kind Cluster
+        uses: helm/kind-action@v1.4.0
 
-  #     - name: Checkout 
-  #       uses: actions/checkout@v2
+      - name: Checkout 
+        uses: actions/checkout@v2
 
-  #     - name: Deploy application
-  #       run: |
-  #         kubectl create -f week-1/k8s-resources/deployment-app-web.yaml
+      - name: Deploy application
+        run: |
+          kubectl create -f week-1/k8s-resources/deployment-app-web.yaml
 
-  #     - name: Print pods
-  #       run: |
-  #         sleep 5 && kubectl get pod -A
+      - name: Print pods
+        run: |
+          sleep 5 && kubectl get pod -A
 
-  #     - name: Print pods
-  #       run: |
-  #         kubectl wait --for=condition=available --timeout=90s deployment/deployments-app-web
+      - name: Print pods
+        run: |
+          kubectl wait --for=condition=available --timeout=90s deployment/deployments-app-web
 
-  #     - name: Print pods
-  #       run: |
-  #         sleep 5 && kubectl get pod -A
+      - name: Print pods
+        run: |
+          sleep 5 && kubectl get pod -A
 
-  # k8s-test-job-cli:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - name: Check out code
-  #     uses: actions/checkout@v2
+  k8s-test-job-cli:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
 
-  #   - name: Set up Go
-  #     uses: actions/setup-go@v2
-  #     with:
-  #       go-version: 1.17
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.17
 
-  #   - name: Install and configure KinD
-  #     run: |
-  #       GO111MODULE="on" go get sigs.k8s.io/kind@v0.11.1
-  #       sudo mv $(go env GOPATH)/bin/kind /usr/local/bin/
-  #       kind create cluster
+    - name: Install and configure KinD
+      run: |
+        GO111MODULE="on" go get sigs.k8s.io/kind@v0.11.1
+        sudo mv $(go env GOPATH)/bin/kind /usr/local/bin/
+        kind create cluster
 
-  #   - name: Set up kubectl
-  #     run: |
-  #       kubectl cluster-info
-  #       kubectl config use-context kind-kind
+    - name: Set up kubectl
+      run: |
+        kubectl cluster-info
+        kubectl config use-context kind-kind
 
-  #   - name: Deploy application
-  #     run: |
-  #       kubectl create -f week-1/k8s-resources/job-app-ml.yaml
+    - name: Deploy application
+      run: |
+        kubectl create -f week-1/k8s-resources/job-app-ml.yaml
 
-  #   - name: Print pods
-  #     run: |
-  #       sleep 5 && kubectl get pod -A
+    - name: Print pods
+      run: |
+        sleep 5 && kubectl get pod -A
 
-  #   - name: Run tests
-  #     run: |
-  #       kubectl wait --for=condition=complete --timeout=90s job/job-app-ml
+    - name: Run tests
+      run: |
+        kubectl wait --for=condition=complete --timeout=90s job/job-app-ml
 
-  #   - name: Print pods
-  #     run: |
-  #       sleep 5 && kubectl get pod -A
+    - name: Print pods
+      run: |
+        sleep 5 && kubectl get pod -A
 
-  #   - name: Clean up
-  #     run: |
-  #       kind delete cluster
+    - name: Clean up
+      run: |
+        kind delete cluster
