@@ -94,12 +94,21 @@ jobs:
 
       - name: Build 
         run: |
-          docker build --tag kyrylprojector/app-web:latest ./week-1/app-web
+          docker build --tag kyrylprojector/app-ml:latest ./week-1/app-ml
 
       - name: Push 
         run: |
-          docker push kyrylprojector/app-web:latest
+          docker push kyrylprojector/app-ml:latest
 
+      - name: Run ok
+        run: |
+          docker run -it  --rm --name app-ml-test-run app-ml:latest
+
+      - name: Run not ok
+        run: |
+          docker run -it  --rm --name app-ml-test-run app-ml:latest python -c "import tfsdfsdime; time.sleep(5); print(f'AUC = {0.0001}')"
+
+        
   # k8s-test-deployment-action:
   #   runs-on: ubuntu-latest
   #   steps:
