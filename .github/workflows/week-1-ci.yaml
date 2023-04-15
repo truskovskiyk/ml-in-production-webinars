@@ -2,9 +2,12 @@ name: week-1-ci
 
 
 on:
-  pull_request:
+  # pull_request:
+  #   branches:
+  #     - main
+  push:
     branches:
-      - main
+      - course-04-2023-week-1    
 
 env:
   IMAGE_ML_APP: app-ml
@@ -12,140 +15,154 @@ env:
 
 
 jobs:
-  build-and-push-app-ml:
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout 
         uses: actions/checkout@v2
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Build and push
-        uses: docker/build-push-action@v2
-        with:
-          context: week-1/app-ml/
-          file: week-1/app-ml/Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_ML_APP }}:latest    
-          cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_ML_APP }}:buildcache
-          cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_ML_APP }}:buildcache,mode=max
-
-  build-and-push-app-web:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout 
-        uses: actions/checkout@v2
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Build and push
-        uses: docker/build-push-action@v2
-        with:
-          context: week-1/app-web/
-          file: week-1/app-web/Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_ML_WEB }}:latest    
-          cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_ML_WEB }}:buildcache
-          cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_ML_WEB }}:buildcache,mode=max
-
-  build-and-push-app-ml-cli-comands:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout 
-        uses: actions/checkout@v2
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Login 
+      - name: Test
         run: |
-          docker login -u kyrylprojector -p ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+          echo 'test'
 
-      - name: Build 
+      - name: Test ls
         run: |
-          docker build --tag kyrylprojector/app-web:latest ./week-1/app-web
+          ls -all .
 
-      - name: Push 
-        run: |
-          docker push kyrylprojector/app-web:latest
+  # build-and-push-app-ml:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout 
+  #       uses: actions/checkout@v2
 
-  k8s-test-deployment-action:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Create k8s Kind Cluster
-        uses: helm/kind-action@v1.4.0
+  #     - name: Login to Docker Hub
+  #       uses: docker/login-action@v1
+  #       with:
+  #         username: ${{ secrets.DOCKER_HUB_USERNAME }}
+  #         password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-      - name: Checkout 
-        uses: actions/checkout@v2
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v1
 
-      - name: Deploy application
-        run: |
-          kubectl create -f week-1/k8s-resources/deployment-app-web.yaml
+  #     - name: Build and push
+  #       uses: docker/build-push-action@v2
+  #       with:
+  #         context: week-1/app-ml/
+  #         file: week-1/app-ml/Dockerfile
+  #         push: true
+  #         tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_ML_APP }}:latest    
+  #         cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_ML_APP }}:buildcache
+  #         cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_ML_APP }}:buildcache,mode=max
 
-      - name: Print pods
-        run: |
-          sleep 5 && kubectl get pod -A
+  # build-and-push-app-web:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout 
+  #       uses: actions/checkout@v2
 
-      - name: Print pods
-        run: |
-          kubectl wait --for=condition=available --timeout=90s deployment/deployments-app-web
+  #     - name: Login to Docker Hub
+  #       uses: docker/login-action@v1
+  #       with:
+  #         username: ${{ secrets.DOCKER_HUB_USERNAME }}
+  #         password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-      - name: Print pods
-        run: |
-          sleep 5 && kubectl get pod -A
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v1
 
-  k8s-test-job-cli:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Check out code
-      uses: actions/checkout@v2
+  #     - name: Build and push
+  #       uses: docker/build-push-action@v2
+  #       with:
+  #         context: week-1/app-web/
+  #         file: week-1/app-web/Dockerfile
+  #         push: true
+  #         tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_ML_WEB }}:latest    
+  #         cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_ML_WEB }}:buildcache
+  #         cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_ML_WEB }}:buildcache,mode=max
 
-    - name: Set up Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: 1.17
+  # build-and-push-app-ml-cli-comands:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout 
+  #       uses: actions/checkout@v2
 
-    - name: Install and configure KinD
-      run: |
-        GO111MODULE="on" go get sigs.k8s.io/kind@v0.11.1
-        sudo mv $(go env GOPATH)/bin/kind /usr/local/bin/
-        kind create cluster
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v1
 
-    - name: Set up kubectl
-      run: |
-        kubectl cluster-info
-        kubectl config use-context kind-kind
+  #     - name: Login 
+  #       run: |
+  #         docker login -u kyrylprojector -p ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-    - name: Deploy application
-      run: |
-        kubectl create -f week-1/k8s-resources/job-app-ml.yaml
+  #     - name: Build 
+  #       run: |
+  #         docker build --tag kyrylprojector/app-web:latest ./week-1/app-web
 
-    - name: Print pods
-      run: |
-        sleep 5 && kubectl get pod -A
+  #     - name: Push 
+  #       run: |
+  #         docker push kyrylprojector/app-web:latest
 
-    - name: Run tests
-      run: |
-        kubectl wait --for=condition=complete --timeout=90s job/job-app-ml
+  # k8s-test-deployment-action:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Create k8s Kind Cluster
+  #       uses: helm/kind-action@v1.4.0
 
-    - name: Print pods
-      run: |
-        sleep 5 && kubectl get pod -A
+  #     - name: Checkout 
+  #       uses: actions/checkout@v2
 
-    - name: Clean up
-      run: |
-        kind delete cluster
+  #     - name: Deploy application
+  #       run: |
+  #         kubectl create -f week-1/k8s-resources/deployment-app-web.yaml
+
+  #     - name: Print pods
+  #       run: |
+  #         sleep 5 && kubectl get pod -A
+
+  #     - name: Print pods
+  #       run: |
+  #         kubectl wait --for=condition=available --timeout=90s deployment/deployments-app-web
+
+  #     - name: Print pods
+  #       run: |
+  #         sleep 5 && kubectl get pod -A
+
+  # k8s-test-job-cli:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - name: Check out code
+  #     uses: actions/checkout@v2
+
+  #   - name: Set up Go
+  #     uses: actions/setup-go@v2
+  #     with:
+  #       go-version: 1.17
+
+  #   - name: Install and configure KinD
+  #     run: |
+  #       GO111MODULE="on" go get sigs.k8s.io/kind@v0.11.1
+  #       sudo mv $(go env GOPATH)/bin/kind /usr/local/bin/
+  #       kind create cluster
+
+  #   - name: Set up kubectl
+  #     run: |
+  #       kubectl cluster-info
+  #       kubectl config use-context kind-kind
+
+  #   - name: Deploy application
+  #     run: |
+  #       kubectl create -f week-1/k8s-resources/job-app-ml.yaml
+
+  #   - name: Print pods
+  #     run: |
+  #       sleep 5 && kubectl get pod -A
+
+  #   - name: Run tests
+  #     run: |
+  #       kubectl wait --for=condition=complete --timeout=90s job/job-app-ml
+
+  #   - name: Print pods
+  #     run: |
+  #       sleep 5 && kubectl get pod -A
+
+  #   - name: Clean up
+  #     run: |
+  #       kind delete cluster
