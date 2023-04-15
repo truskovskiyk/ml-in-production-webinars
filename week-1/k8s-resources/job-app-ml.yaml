@@ -3,7 +3,7 @@ kind: Job
 metadata:
   name: job-app-ml
 spec:
-  parallelism: 1
+  parallelism: 2
   template:
     spec:
       restartPolicy: Never
