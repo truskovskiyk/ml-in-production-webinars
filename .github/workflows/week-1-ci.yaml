@@ -1,12 +1,13 @@
 name: week-1-ci
 
+
 on:
   push:
     branches:
-      - 'main'
-      - 'course-04-2023-week-1'
-    paths:
-      - ./week-1/
+      - main
+  pull_request:
+    branches:
+      - main
 
 env:
   IMAGE_ML_APP: app-ml
@@ -95,6 +96,41 @@ jobs:
         run: |
           kubectl get pod -A
 
+  kind-test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.17
+
+    - name: Install and configure KinD
+      run: |
+        GO111MODULE="on" go get sigs.k8s.io/kind@v0.11.1
+        sudo mv $(go env GOPATH)/bin/kind /usr/local/bin/
+        kind create cluster
+
+    - name: Set up kubectl
+      run: |
+        kubectl cluster-info
+        kubectl config use-context kind-kind
+
+    - name: Deploy application
+      run: |
+        # Replace this with the necessary commands to deploy your application to the KinD cluster
+        kubectl apply -f week-1/k8s-resources/job-app-ml.yaml
+
+    - name: Run tests
+      run: |
+        # Replace this with the necessary commands to run your tests against the deployed application
+        kubectl run your-test-command
+
+    - name: Clean up
+      run: |
+        kind delete cluster
   # k8s_local_test_with_minikube:
 
   #   runs-on: ubuntu-latest
