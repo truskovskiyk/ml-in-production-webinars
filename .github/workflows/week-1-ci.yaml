@@ -93,9 +93,9 @@ jobs:
       - name: Create k8s Kind Cluster
         uses: helm/kind-action@v1.4.0
 
-    - name: Deploy application
-      run: |
-        kubectl create -f week-1/k8s-resources/deployment-app-web.yaml
+      - name: Deploy application
+        run: |
+          kubectl create -f week-1/k8s-resources/deployment-app-web.yaml
 
       - name: Print pods
         run: |
