@@ -11,8 +11,8 @@ docker build --tag app-ml:latest ./app-ml
 Run ml sample docker container 
 
 ```
-docker run -it  --rm --name app-ml-test-run app-ml:latest
-docker run -it  --rm --name app-ml-test-run app-ml:latest python -c "import time; time.sleep(5); print(f'AUC = {0.0001}')"
+docker run -it --rm --name app-ml-test-run app-ml:latest
+docker run -it --rm --name app-ml-test-run app-ml:latest python -c "import time; time.sleep(5); print(f'AUC = {0.0001}')"
 ```
 
 

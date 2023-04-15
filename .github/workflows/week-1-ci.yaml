@@ -102,11 +102,11 @@ jobs:
 
       - name: Run ok
         run: |
-          docker run -it  --rm --name app-ml-test-run app-ml:latest
+          docker run --rm --name app-ml-test-run app-ml:latest
 
       - name: Run not ok
         run: |
-          docker run -it  --rm --name app-ml-test-run app-ml:latest python -c "import tfsdfsdime; time.sleep(5); print(f'AUC = {0.0001}')"
+          docker run --rm --name app-ml-test-run app-ml:latest python -c "import tfsdfsdime; time.sleep(5); print(f'AUC = {0.0001}')"
 
         
   # k8s-test-deployment-action:
