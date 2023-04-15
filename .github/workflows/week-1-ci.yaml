@@ -65,7 +65,7 @@ jobs:
           cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_ML_WEB }}:buildcache
           cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_ML_WEB }}:buildcache,mode=max
 
-  build-and-push-app-ml-ssh-comands:
+  build-and-push-app-ml-cli-comands:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout 
@@ -86,17 +86,29 @@ jobs:
         run: |
           docker push kyrylprojector/app-web:latest
 
-  create-cluster:
+  k8s-test-deployment-action:
     runs-on: ubuntu-latest
     steps:
       - name: Create k8s Kind Cluster
         uses: helm/kind-action@v1.4.0
 
-      - name: Test
+    - name: Deploy application
+      run: |
+        kubectl create -f week-1/k8s-resources/deployment-app-web.yaml
+
+      - name: Print pods
         run: |
           kubectl get pod -A
 
-  kind-test:
+      - name: Print pods
+        run: |
+          kubectl wait --for=condition=available --timeout=30s deployment/deployments-app-web
+
+      - name: Print pods
+        run: |
+          kubectl get pod -A
+
+  k8s-test-job-cli:
     runs-on: ubuntu-latest
     steps:
     - name: Check out code
@@ -120,44 +132,20 @@ jobs:
 
     - name: Deploy application
       run: |
-        # Replace this with the necessary commands to deploy your application to the KinD cluster
-        kubectl apply -f week-1/k8s-resources/job-app-ml.yaml
+        kubectl create -f week-1/k8s-resources/job-app-ml.yaml
+
+    - name: Print pods
+      run: |
+        kubectl get pod -A
 
     - name: Run tests
       run: |
-        # Replace this with the necessary commands to run your tests against the deployed application
-        kubectl run your-test-command
+        kubectl wait --for=condition=complete --timeout=30s job/job-app-ml
+
+    - name: Print pods
+      run: |
+        kubectl get pod -A
 
     - name: Clean up
       run: |
         kind delete cluster
-  # k8s_local_test_with_minikube:
-
-  #   runs-on: ubuntu-latest
-  #   name: build example and deploy to minikube
-
-  #   steps:
-  #   - uses: actions/checkout@v2
-  #   - name: Start minikube
-  #     uses: medyagh/setup-minikube@master
-
-  #   - name: Try the cluster !
-  #     run: kubectl get pods -A
-    
-  #   - name: Deploy job to minikube
-  #     run: |
-  #       kubectl create -f week-1/k8s-resources/job-app-ml.yaml 
-  #       kubectl wait --for=condition=complete --timeout=300s job/job-app-ml
-  #       kubectl get pod
-
-  #   - name: Deploy app to minikube
-  #     run: |
-  #       # kubectl create -f week-1/k8s-resources/deployment-app-web.yaml
-  #       kubectl get pod 
-  
-    # - name: Test service URLs
-    #   run: |
-    #     minikube service list
-    #     minikube service deployments-app-web --url
-    #     echo "------------------opening the service------------------"
-    #     curl $(minikube service deployments-app-web --url)  
