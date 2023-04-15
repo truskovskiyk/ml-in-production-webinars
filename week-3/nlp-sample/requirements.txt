@@ -1,9 +1,0 @@
-transformers==4.21.1
-datasets==2.4.0
-typer==0.6.1
-wandb==0.13.3
-black==22.3.0
-isort==5.10.1
-flake8==5.0.4
-great-expectations==0.15.25
-pytest-cov==3.0.0
