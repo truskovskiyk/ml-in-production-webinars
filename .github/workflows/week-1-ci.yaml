@@ -93,21 +93,24 @@ jobs:
       - name: Create k8s Kind Cluster
         uses: helm/kind-action@v1.4.0
 
+      - name: Checkout 
+        uses: actions/checkout@v2
+
       - name: Deploy application
         run: |
           kubectl create -f week-1/k8s-resources/deployment-app-web.yaml
 
       - name: Print pods
         run: |
-          kubectl get pod -A
+          sleep 5 && kubectl get pod -A
 
       - name: Print pods
         run: |
-          kubectl wait --for=condition=available --timeout=30s deployment/deployments-app-web
+          kubectl wait --for=condition=available --timeout=90s deployment/deployments-app-web
 
       - name: Print pods
         run: |
-          kubectl get pod -A
+          sleep 5 && kubectl get pod -A
 
   k8s-test-job-cli:
     runs-on: ubuntu-latest
@@ -137,15 +140,15 @@ jobs:
 
     - name: Print pods
       run: |
-        kubectl get pod -A
+        sleep 5 && kubectl get pod -A
 
     - name: Run tests
       run: |
-        kubectl wait --for=condition=complete --timeout=30s job/job-app-ml
+        kubectl wait --for=condition=complete --timeout=90s job/job-app-ml
 
     - name: Print pods
       run: |
-        kubectl get pod -A
+        sleep 5 && kubectl get pod -A
 
     - name: Clean up
       run: |
