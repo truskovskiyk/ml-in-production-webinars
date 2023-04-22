@@ -2,8 +2,8 @@ from pathlib import Path
 from minio import Minio
 import s3fs
 
-ACCESS_KEY = "minio"
-SECRET_KEY = "minio123"
+ACCESS_KEY = "minioadmin"
+SECRET_KEY = "minioadmin"
 ENDPOINT = "0.0.0.0:9000"
 
 
