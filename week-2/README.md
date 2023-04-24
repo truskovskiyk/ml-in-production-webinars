@@ -39,6 +39,7 @@ kubectl port-forward --address=0.0.0.0 pod/minio 9000 9090
 export AWS_ACCESS_KEY_ID="minioadmin"
 export AWS_SECRET_ACCESS_KEY="minioadmin"
 export AWS_ENDPOINT="http://0.0.0.0:9000"
+
 aws s3 ls --endpoint-url $AWS_ENDPOINT
 aws s3api create-bucket --bucket test --endpoint-url $AWS_ENDPOINT 
 ```
@@ -72,10 +73,11 @@ https://aaltoscicomp.github.io/python-for-scicomp/data-formats/
 
 # Streaming dataset
 
+- https://www.tensorflow.org/tutorials/load_data/tfrecord
 - https://github.com/aws/amazon-s3-plugin-for-pytorch
 - https://pytorch.org/blog/efficient-pytorch-io-library-for-large-datasets-many-files-many-gpus/
 - https://github.com/webdataset/webdataset
-- https://www.tensorflow.org/tutorials/load_data/tfrecord 
+
 
 
 Create
@@ -99,17 +101,26 @@ python tutorial.py get-dataloader --path-to-save random-data
 
 # Vector search 
 
-Deploy 
+Deploy with Helm 
+
 
 ```
 kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.5.3/cert-manager.yaml
 helm repo add milvus https://milvus-io.github.io/milvus-helm/
 helm repo update
-
-
-helm upgrade --install my-vector-db --set cluster.enabled=false --set etcd.replicaCount=1 --set pulsar.enabled=false --set minio.mode=standalone milvus/milvus
+helm upgrade --install vector-search --set cluster.enabled=false --set etcd.replicaCount=1 --set pulsar.enabled=false --set minio.mode=standalone milvus/milvus
 ```
 
+Deploy with kubeclt
+
+
+```
+kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.5.3/cert-manager.yaml
+helm repo add milvus https://milvus-io.github.io/milvus-helm/
+helm repo update
+helm template --set cluster.enabled=false --set etcd.replicaCount=1 --set pulsar.enabled=false --set minio.mode=standalone milvus/milvus > milvus.yaml
+kubeclt create -f milvus.yaml
+```
 
 Run UI 
 
@@ -119,9 +130,6 @@ kubectl port-forward svc/my-vector-db-milvus --address=0.0.0.0 19530:19530
 docker run -p 8000:3000 -e MILVUS_URL=0.0.0.0:19530 zilliz/attu:v2.2.3
 ```
 
-```
-
-```
 
 # DVC 
 

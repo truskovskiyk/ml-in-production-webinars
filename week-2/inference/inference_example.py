@@ -11,6 +11,21 @@ import ray
 from dask.distributed import Client
 
 
+
+# thread: th1, th2:  
+#                       th1 (inv(1) -> 10 -> inv (1)) 
+#                       th2 (10 -> inv (1) -> 10)
+#   1 + 10 + 1 + 10 + 1 + 10 = 33
+#   1 + 10 | 10 + 1 + 1 + 10 = 23
+
+# processes
+#                       p1 (inv(100) -> 10 -> inv (100)) 
+#                       p1 (10 -> inv (100) -> 10)
+#   210
+#   330
+#   
+# asyn, green thread
+
 def train_model(x_train: np.ndarray, y_train: np.ndarray) -> DummyClassifier:
     dummy_clf = DummyClassifier(strategy="most_frequent")
     dummy_clf.fit(x_train, y_train)
@@ -30,6 +45,7 @@ def predict(model: DummyClassifier, x: np.ndarray) -> np.ndarray:
 
     # dim = 150
     # np.linalg.inv(np.random.rand(dim * dim).reshape((dim, dim)))
+    
     time.sleep(0.002)
     return model.predict(x)
 

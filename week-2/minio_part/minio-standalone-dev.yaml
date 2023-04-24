@@ -14,7 +14,7 @@ spec:
     args: 
     - minio server /data --console-address :9090
     volumeMounts:
-    - name: storage # must match the volume name, above
+    - name: storage
       mountPath: "/data"
     ports:
     - containerPort: 9000
@@ -24,23 +24,20 @@ spec:
   volumes:
   - name: storage
     persistentVolumeClaim:
-      # Name of the PVC created earlier
       claimName: minio-pv-claim
+
 
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  # This name uniquely identifies the PVC. Will be used in deployment below.
   name: minio-pv-claim
   labels:
     app: minio-storage-claim
 spec:
-  # Read more about access modes here: http://kubernetes.io/docs/user-guide/persistent-volumes/#access-modes
   accessModes:
     - ReadWriteOnce
   storageClassName: standard
   resources:
-    # This is the request for storage. Should be available in the cluster.
     requests:
       storage: 10Gi    

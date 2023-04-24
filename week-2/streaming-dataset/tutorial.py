@@ -13,6 +13,7 @@ def create_data(path_to_save: Path = Path('mds-dataset'), size: int = 10000):
         'class': 'int'
     }
     compression = 'zstd'
+    
     with MDSWriter(out=str(path_to_save), columns=columns, compression=compression) as out:
         for i in range(size):
             sample = {
@@ -20,6 +21,8 @@ def create_data(path_to_save: Path = Path('mds-dataset'), size: int = 10000):
                 'class': np.random.randint(10),
             }
             out.write(sample)
+
+
 
 def get_dataloader(remote: str = 's3://datasets/random-data', local_cache: Path = ('cache')):
     dataset = StreamingDataset(local=str(local_cache), remote=remote, shuffle=True)

@@ -79,7 +79,7 @@ def search_index(collection_name: str = 'test', vec_dim: int = 768, host: str = 
     collection = Collection(collection_name)
     collection.load()
 
-    q_vecto = np.random.rand(q_vecto)
+    q_vecto = np.random.rand(vec_dim)
 
     search_params = {"metric_type": "L2", "params": {"nprobe": 10}, "offset": 5}
     results = collection.search(
