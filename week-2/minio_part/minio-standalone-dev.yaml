@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: minio
+  name: minio
+spec:
+  containers:
+  - name: minio
+    image: quay.io/minio/minio:latest
+    command:
+    - /bin/bash
+    - -c
+    args: 
+    - minio server /data --console-address :9090
+    volumeMounts:
+    - name: storage
+      mountPath: "/data"
+    ports:
+    - containerPort: 9000
+      hostPort: 9000
+    - containerPort: 9090
+      hostPort: 9090      
+  volumes:
+  - name: storage
+    persistentVolumeClaim:
+      claimName: minio-pv-claim
+
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: minio-pv-claim
+  labels:
+    app: minio-storage-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: standard
+  resources:
+    requests:
+      storage: 10Gi    
