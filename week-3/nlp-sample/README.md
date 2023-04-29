@@ -12,7 +12,7 @@ make build
 make run_dev
 cd /main 
 export PYTHONPATH=.
-export WANDB_PROJECT=nlp-sample
+export WANDB_PROJECT=my-awesome-project
 export WANDB_API_KEY=****************
 ```
 

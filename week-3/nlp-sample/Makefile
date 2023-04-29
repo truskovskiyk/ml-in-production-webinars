@@ -27,7 +27,7 @@ test_all:
 	pytest --cov=nlp_sample tests/
 
 train_example:
-	export WANDB_PROJECT=nlp-sample
+	export WANDB_PROJECT=course-04-2023-week-3
 	python nlp_sample/cli.py load-cola-data ./data
 	python nlp_sample/cli.py train ./conf/example.json
 	python nlp_sample/cli.py upload-to-registry example_model /tmp/results
