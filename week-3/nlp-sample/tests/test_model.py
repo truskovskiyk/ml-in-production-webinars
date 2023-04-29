@@ -24,7 +24,7 @@ def data_args(data_path: Path) -> DataTrainingArguments:
 
 @pytest.fixture()
 def training_args() -> TrainingArguments:
-    return TrainingArguments(output_dir="/tmp/test", num_train_epochs=500, report_to=[], learning_rate=1e-05)
+    return TrainingArguments(output_dir="/tmp/test", num_train_epochs=1000, report_to=[], learning_rate=5e-04)
 
 
 @pytest.fixture()
