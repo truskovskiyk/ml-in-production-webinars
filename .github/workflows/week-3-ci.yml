@@ -53,7 +53,7 @@ jobs:
 
       - name: Test all
         run: |
-          docker run nlp-sample:latest make test_all
+          docker run -e WANDB_PROJECT=${{ secrets.WANDB_PROJECT }} -e WANDB_API_KEY=${{ secrets.WANDB_API_KEY }} nlp-sample:latest make test_all
 
       - name: Push
         uses: docker/build-push-action@v2

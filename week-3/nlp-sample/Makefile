@@ -12,16 +12,16 @@ lint:
 	flake8 --max-line-length 120 nlp_sample tests
 
 test:
-	pytest ./tests/
+	pytest --disable-warnings ./tests/
 
 test_data:
-	pytest -rc ./tests/test_data.py
+	pytest --disable-warnings -rc ./tests/test_data.py
 
 test_code:
-	pytest -rc ./tests/test_code.py
+	pytest --disable-warnings -rc ./tests/test_code.py
 
 test_model:
-	pytest -ss ./tests/test_model.py
+	pytest --disable-warnings -ss ./tests/test_model.py
 
 test_all:
 	pytest --cov=nlp_sample tests/
