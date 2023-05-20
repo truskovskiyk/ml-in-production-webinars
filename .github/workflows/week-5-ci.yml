@@ -3,7 +3,7 @@ name: week-5-ci
 on:
   push:
     branches:
-      - 'week-5'
+      - 'course-04-2023-week-5'
 
 jobs:
   build:
