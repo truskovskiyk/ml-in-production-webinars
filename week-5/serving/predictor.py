@@ -12,14 +12,13 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 logger = logging.getLogger()
 
-MODEL_ID = "truskovskiyk/nlp-sample/kfp-pipeline:latest"
+MODEL_ID = "truskovskiyk/course-04-2023-week-3/airflow-pipeline:latest"
 MODEL_PATH = "/tmp/model"
 MODEL_LOCK = ".lock-file"
 
 
 def load_from_registry(model_name: str, model_path: Path):
     with wandb.init() as run:
-
         artifact = run.use_artifact(model_name, type="model")
         artifact_dir = artifact.download(root=model_path)
         print(f"{artifact_dir}")
