@@ -8,10 +8,10 @@ spec:
   - command:
     - /bin/sh
     - -c
-    - 'locust -f load-testing/locustfile.py --host=http://app-fastapi.default.svc.cluster.local:8080 --users 50 --spawn-rate 10 --autostart --run-time 600s'
-    image: 823217009914.dkr.ecr.us-west-2.amazonaws.com/riva-tts-fast-api:latest
+    - 'locust -f /app/load-testing/locustfile.py --host=http://app-fastapi.default.svc.cluster.local:8080 --users 50 --spawn-rate 10 --autostart --run-time 600s'
+    image: kyrylprojector/app-fastapi-week-6:latest
     imagePullPolicy: Always
-    name: l2
+    name: load
     ports:
     - containerPort: 8089
       protocol: TCP

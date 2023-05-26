@@ -37,5 +37,20 @@ Run on k8s
 
 ```
 
+
+# HPA
+
+
+```
+kubectl autoscale deployment app-fastapi --cpu-percent=50 --min=1 --max=10
+
+```
+
+
+- https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+- https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
+
+
+
 # use kubectl create instead of apply because the job template is using generateName which doesn't work with kubectl apply
 kubectl create -f https://raw.githubusercontent.com/kserve/kserve/release-0.8/docs/samples/v1beta1/sklearn/v1/perf.yaml -n kserve-test
