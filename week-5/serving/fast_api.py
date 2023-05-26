@@ -22,6 +22,9 @@ predictor = Predictor.default_from_model_registry()
 def health_check() -> str:
     return "ok"
 
+@app.get("/health_check")
+def health_check() -> str:
+    return "ok"
 
 @app.post("/predict", response_model=Prediction)
 def predict(payload: Payload) -> Prediction:

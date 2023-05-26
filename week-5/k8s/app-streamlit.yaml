@@ -18,7 +18,10 @@ spec:
           image: kyrylprojector/app-streamlit:latest
           env:
           - name: WANDB_API_KEY
-            value: "**************"          
+            valueFrom:
+              secretKeyRef:
+                name: wandb
+                key: WANDB_API_KEY
 ---
 apiVersion: v1
 kind: Service

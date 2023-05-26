@@ -24,18 +24,14 @@ spec:
           - name: SELDON_DEBUG
             value: '1'          
           - name: WANDB_API_KEY
-            value: "*********"             
+            valueFrom:
+              secretKeyRef:
+                name: wandb
+                key: WANDB_API_KEY          
           imagePullPolicy: Always
 
     graph:
       name: classifier
       type: MODEL
-      # parameters: [
-      #   {
-      #     "name": "model_load_path",
-      #     "type": "STRING",
-      #     "value": "model-artifacts/"
-      #   }
-      # ]
     name: model
     replicas: 1
