@@ -12,3 +12,4 @@ flake8==5.0.4
 great-expectations==0.15.25
 pytest-cov==3.0.0
 seldon-core==1.14.1
+locust==2.15.0

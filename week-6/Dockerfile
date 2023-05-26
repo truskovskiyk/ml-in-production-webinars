@@ -1,4 +1,4 @@
-FROM huggingface/transformers-pytorch-gpu:4.22.1 as base
+ FROM huggingface/transformers-pytorch-gpu:4.22.1 as base
 
 WORKDIR /app
 
@@ -18,11 +18,6 @@ ENV PYTHONPATH /app
 COPY . . 
 
 CMD [ "bash" ]
-
-# Streamlit UI docker image
-FROM base AS app-streamlit
-CMD streamlit run --server.address 0.0.0.0 --server.port 8080 serving/ui_app.py
-
 
 # Fast API docker image
 FROM base AS app-fastapi

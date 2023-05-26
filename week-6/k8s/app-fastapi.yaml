@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: app-fastapi
-          image: kyrylprojector/app-fastapi:latest
+          image: kyrylprojector/app-fastapi-week-6:latest
           env:
           - name: WANDB_API_KEY
             valueFrom:
