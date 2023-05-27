@@ -77,14 +77,14 @@ Install kserve
 curl -s "https://raw.githubusercontent.com/kserve/kserve/release-0.10/hack/quick_install.sh" | bash
 ```
 
-Test single model 
+## Test single model 
 
 ```
 kubectl create namespace kserve-test
 kubectl create -n kserve-test -f ./k8s/kserve-iris.yaml
 kubectl get inferenceservices sklearn-iris -n kserve-test
 kubectl get svc istio-ingressgateway -n istio-system
-kubectl port-forward --namespace istio-system svc/istio-ingressgateway 8080:80
+
 ```
 
 ```
@@ -95,6 +95,35 @@ curl -v -H "Host: sklearn-iris.kserve-test.example.com" "http://0.0.0.0:8080/v1/
 ```
 kubectl create -f load-testing/perf.yaml -n kserve-test
 ```
+
+
+## Test custom model 
+
+
+Run locally 
+
+```
+docker build -t kyrylprojector/kserve-custom:latest -f Dockerfile --target app-kserve .
+docker build -t kyrylprojector/kserve-custom:latest -f Dockerfile --target app-kserve . && docker push kyrylprojector/kserve-custom:latest
+
+docker run -e PORT=8080 -e WANDB_API_KEY=******* -p 8080:8080 kyrylprojector/kserve-custom:latest 
+
+
+curl localhost:8080/v1/models/custom-model:predict -d @data/text-input.json
+```
+
+Run on k8s 
+
+```
+kubectl apply -f k8s/kserve-custom.yaml
+
+kubectl port-forward --namespace istio-system svc/istio-ingressgateway 8080:80
+curl -v -H "Host: custom-model.default.example.com" "http://0.0.0.0:8080/v1/models/custom-model:predict" -d @data/text-input.json
+```
+
+- https://kserve.github.io/website/0.10/modelserving/v1beta1/custom/custom_model/#implement-custom-model-using-kserve-api
+
+## Kafka
 
 
 Install kafka 
@@ -120,6 +149,18 @@ Install minio & creds
 kubectl apply -f k8s/kafka-infra.yaml
 ```
 
+## Kafka UI 
+
+```
+helm repo add kafka-ui https://provectus.github.io/kafka-ui
+helm install helm-release-name kafka-ui/kafka-ui -f k8s/kafka-ui-values.yml
+
+export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=kafka-ui,app.kubernetes.io/instance=helm-release-name" -o jsonpath="{.items[0].metadata.name}")
+kubectl --namespace default port-forward --address 0.0.0.0 $POD_NAME 8080:8080
+```
+
+
+## Mnist example 
 
 Configure minio
 
@@ -140,7 +181,11 @@ mc cp -r mnist myminio/
 Deploy model 
 
 ```
-kubectl create -f k8s/kafka-model.yaml
+kubectl create -f k8s/kafka-model-mnist.yaml
+
+# docker build -t kyrylprojector/mnist-transformer:latest -f ./transformer.Dockerfile . && docker push kyrylprojector/mnist-transformer:latest
+# kubectl delete -f mnist_kafka_new.yaml
+# kubectl create -f mnist_kafka_new.yaml
 ```
 
 Trigger the model 
@@ -150,15 +195,25 @@ mc cp data/0.png myminio/mnist
 ```
 
 
-docker build -t kyrylprojector/mnist-transformer:latest -f ./transformer.Dockerfile . && docker push kyrylprojector/mnist-transformer:latest
-kubectl delete -f mnist_kafka_new.yaml
-kubectl create -f mnist_kafka_new.yaml
+
+## NLP example 
+
+```
+mc mb myminio/custom-input-json
+mc mb myminio/custom-output-json
+
+mc admin config set myminio notify_kafka:1 tls_skip_verify="off"  queue_dir="" queue_limit="0" sasl="off" sasl_password="" sasl_username="" tls_client_auth="0" tls="off" client_tls_cert="" client_tls_key="" brokers="kafka-headless.default.svc.cluster.local:9092" topic="custom" version=""
+mc admin service restart myminio
+mc event add myminio/custom-input-json arn:minio:sqs::1:kafka -p --event put --suffix .json
 
 
-docker build -t kyrylprojector/kserve-custom:latest -f Dockerfile . && docker push kyrylprojector/kserve-custom:latest
+docker build -t kyrylprojector/kserve-custom-transformer:latest -f Dockerfile --target app-kserve-transformer . && docker push kyrylprojector/kserve-custom-transformer:latest
 
-docker build -t kyrylprojector/kserve-custom:latest -f Dockerfile --target app-kserve .
-docker run -e PORT=8080 e WANDB_API_KEY=cb86168a2e8db7edb905da69307450f5e7867d66 -p 8080:8080 kyrylprojector/kserve-custom:latest 
+kubectl apply -f ./k8s/kafka-model-custom.yaml
+
+mc cp data/text-input.json myminio/custom-input-json
+```
+
 
 
 

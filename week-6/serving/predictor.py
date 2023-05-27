@@ -18,6 +18,7 @@ MODEL_LOCK = ".lock-file"
 
 
 def load_from_registry(model_name: str, model_path: Path):
+    wandb.login(key="cb86168a2e8db7edb905da69307450f5e7867d66")
     with wandb.init() as run:
         artifact = run.use_artifact(model_name, type="model")
         artifact_dir = artifact.download(root=model_path)

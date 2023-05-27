@@ -27,3 +27,8 @@ FROM base AS app-kserve
 
 ENTRYPOINT ["python", "serving/kserve_api.py"]
 
+
+FROM base AS app-kserve-transformer
+
+ENTRYPOINT ["python", "serving/kserve_transformer.py"]
+
