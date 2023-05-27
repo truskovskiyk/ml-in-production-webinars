@@ -1,0 +1,51 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: mnist
+spec:
+  predictor:
+    minReplicas: 1
+    model:
+      modelFormat:
+        name: tensorflow
+      resources:
+        limits:
+          cpu: 100m
+          memory: 1Gi
+        requests:
+          cpu: 100m
+          memory: 1Gi
+      runtimeVersion: 1.14.0
+      storageUri: s3://mnist
+  transformer:
+    minReplicas: 1
+    containers:
+      - image: kyrylprojector/mnist-transformer:latest
+        name: kserve-container
+        resources:
+          limits:
+            cpu: 100m
+            memory: 1Gi
+          requests:
+            cpu: 100m
+            memory: 1Gi
+---
+apiVersion: sources.knative.dev/v1beta1
+kind: KafkaSource
+metadata:
+  name: kafka-source
+spec:
+  consumerGroup: knative-group
+  # Broker URL. Replace this with the URLs for your kafka cluster,
+  # which is in the format of my-cluster-kafka-bootstrap.my-kafka-namespace:9092.
+  bootstrapServers:
+    - kafka-headless.default.svc.cluster.local:9092
+  topics:
+    - mnist
+  sink:
+    ref:
+      apiVersion: serving.kserve.io/v1beta1
+      kind: InferenceService
+      name: mnist
+    uri: /v1/models/mnist:predict
+
