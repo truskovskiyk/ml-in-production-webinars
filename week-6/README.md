@@ -159,63 +159,6 @@ export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/nam
 kubectl --namespace default port-forward --address 0.0.0.0 $POD_NAME 8080:8080
 ```
 
-
-## Mnist example 
-
-Configure minio
-
-```
-kubectl port-forward $(kubectl get pod --selector="app=minio" --output jsonpath='{.items[0].metadata.name}') 9000:9000
-
-mc mb myminio/mnist
-mc mb myminio/digits
-
-mc admin config set myminio notify_kafka:1 tls_skip_verify="off"  queue_dir="" queue_limit="0" sasl="off" sasl_password="" sasl_username="" tls_client_auth="0" tls="off" client_tls_cert="" client_tls_key="" brokers="kafka-headless.default.svc.cluster.local:9092" topic="mnist" version=""
-mc admin service restart myminio
-mc event add myminio/mnist arn:minio:sqs::1:kafka -p --event put --suffix .png
-
-gsutil cp -r gs://kfserving-examples/models/tensorflow/mnist .
-mc cp -r mnist myminio/
-```
-
-Deploy model 
-
-```
-kubectl create -f k8s/kafka-model-mnist.yaml
-
-# docker build -t kyrylprojector/mnist-transformer:latest -f ./transformer.Dockerfile . && docker push kyrylprojector/mnist-transformer:latest
-# kubectl delete -f mnist_kafka_new.yaml
-# kubectl create -f mnist_kafka_new.yaml
-```
-
-Trigger the model 
-
-```
-mc cp data/0.png myminio/mnist
-```
-
-
-
-## NLP example 
-
-```
-mc mb myminio/custom-input-json
-mc mb myminio/custom-output-json
-
-mc admin config set myminio notify_kafka:1 tls_skip_verify="off"  queue_dir="" queue_limit="0" sasl="off" sasl_password="" sasl_username="" tls_client_auth="0" tls="off" client_tls_cert="" client_tls_key="" brokers="kafka-headless.default.svc.cluster.local:9092" topic="custom" version=""
-mc admin service restart myminio
-mc event add myminio/custom-input-json arn:minio:sqs::1:kafka -p --event put --suffix .json
-
-
-docker build -t kyrylprojector/kserve-custom-transformer:latest -f Dockerfile --target app-kserve-transformer . && docker push kyrylprojector/kserve-custom-transformer:latest
-
-kubectl apply -f ./k8s/kafka-model-custom.yaml
-
-mc cp data/text-input.json myminio/custom-input-json
-```
-
-
-
 ## New example 
 
 Configure minio
@@ -235,7 +178,8 @@ mc event add myminio/input arn:minio:sqs::1:kafka -p --event put --suffix .json
 Deploy model 
 
 ```
-kubectl create -f k8s/kafka-model-mnist.yaml
+kubectl create -f ./k8s/kafka-model-new.yaml
+
 
 # docker build -t kyrylprojector/kserve-custom-transformer:latest -f Dockerfile --target app-kserve-transformer . && docker push kyrylprojector/kserve-custom-transformer:latest
 # kubectl delete -f mnist_kafka_new.yaml
