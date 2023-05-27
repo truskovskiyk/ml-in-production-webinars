@@ -1,6 +1,5 @@
-
 import numpy as np
-from locust import HttpUser, task, between
+from locust import HttpUser, between, task
 
 movie_reviews = [
     "A rollercoaster of emotions with stunning visuals and remarkable performances. A must-see!",
@@ -22,7 +21,7 @@ movie_reviews = [
     "An action-packed thrill ride with memorable characters and an engaging plot.",
     "The action scenes are overdone and the storyline is paper thin.",
     "A captivating sci-fi thriller that challenges your perception of reality.",
-    "The plot is confusing and the ending leaves too many questions unanswered."
+    "The plot is confusing and the ending leaves too many questions unanswered.",
 ]
 
 
@@ -34,4 +33,3 @@ class PredictUser(HttpUser):
         num_of_review = np.random.randint(1, 100)
         reviews = np.random.choice(movie_reviews, size=num_of_review, replace=True)
         self.client.post("/predict", json={"text": reviews.tolist()})
-
