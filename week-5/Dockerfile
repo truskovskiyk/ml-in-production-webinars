@@ -1,4 +1,3 @@
-week-5/Dockerfile # Base docker image
 FROM huggingface/transformers-pytorch-gpu:4.22.1 as base
 
 WORKDIR /app

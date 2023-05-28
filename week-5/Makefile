@@ -30,21 +30,3 @@ run_kserve:
 	docker run -e PORT=8080 -e WANDB_API_KEY=${WANDB_API_KEY} -p 8081:8080 app-kserve:latest 
 
 
-
-
-ssh:
-	ssh ubuntu@54.80.42.54
-
-upload:
-	rsync -ave ssh ~/Projects/P/ml-in-production-webinars ubuntu@54.80.42.54:~/
-
-open_ui:
-	open http://54.80.42.54:8081
-
-open_minio_ui:
-	open http://54.80.42.54:9000
-
-
-open_airflow_ui:
-	open http://54.80.42.54:8080
-
