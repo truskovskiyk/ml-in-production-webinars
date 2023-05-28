@@ -15,10 +15,10 @@ logger = logging.getLogger()
 MODEL_ID = "truskovskiyk/course-04-2023-week-3/airflow-pipeline:latest"
 MODEL_PATH = "/tmp/model"
 MODEL_LOCK = ".lock-file"
-
+WANDB_KEY = "********"
 
 def load_from_registry(model_name: str, model_path: Path):
-    wandb.login(key="cb86168a2e8db7edb905da69307450f5e7867d66")
+    wandb.login(key=WANDB_KEY)
     with wandb.init() as run:
         artifact = run.use_artifact(model_name, type="model")
         artifact_dir = artifact.download(root=model_path)

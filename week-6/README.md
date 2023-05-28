@@ -38,6 +38,9 @@ kubectl create -f ./k8s/fastapi-locust.yaml
 kubectl port-forward --address 0.0.0.0 pod/load-fastapi-naive 8089:8089
 ```
 
+- https://github.com/locustio/locust
+- https://github.com/grafana/k6
+- https://github.com/gatling/gatling
 
 # HPA
 
@@ -85,6 +88,8 @@ kubectl create -n kserve-test -f ./k8s/kserve-iris.yaml
 kubectl get inferenceservices sklearn-iris -n kserve-test
 kubectl get svc istio-ingressgateway -n istio-system
 
+kubectl port-forward --address 0.0.0.0 svc/istio-ingressgateway -n istio-system 8080:80
+
 ```
 
 ```
@@ -109,7 +114,7 @@ docker build -t kyrylprojector/kserve-custom:latest -f Dockerfile --target app-k
 docker run -e PORT=8080 -e WANDB_API_KEY=******* -p 8080:8080 kyrylprojector/kserve-custom:latest 
 
 
-curl localhost:8080/v1/models/custom-model:predict -d @data/text-input.json
+curl localhost:8080/v1/models/kserve-custom:predict -d @data/text-input.json
 ```
 
 Run on k8s 
@@ -118,10 +123,11 @@ Run on k8s
 kubectl apply -f k8s/kserve-custom.yaml
 
 kubectl port-forward --namespace istio-system svc/istio-ingressgateway 8080:80
-curl -v -H "Host: custom-model.default.example.com" "http://0.0.0.0:8080/v1/models/custom-model:predict" -d @data/text-input.json
+curl -v -H "Host: custom-model.default.example.com" "http://0.0.0.0:8080/v1/models/kserve-custom:predict" -d @data/text-input.json
 ```
 
 - https://kserve.github.io/website/0.10/modelserving/v1beta1/custom/custom_model/#implement-custom-model-using-kserve-api
+
 
 ## Kafka
 
@@ -166,10 +172,14 @@ Configure minio
 ```
 kubectl port-forward $(kubectl get pod --selector="app=minio" --output jsonpath='{.items[0].metadata.name}') 9000:9000
 
+mc config host add myminio http://127.0.0.1:9000 minio minio123
+
 mc mb myminio/input
 mc mb myminio/output
 
 mc admin config set myminio notify_kafka:1 tls_skip_verify="off"  queue_dir="" queue_limit="0" sasl="off" sasl_password="" sasl_username="" tls_client_auth="0" tls="off" client_tls_cert="" client_tls_key="" brokers="kafka-headless.default.svc.cluster.local:9092" topic="test" version=""
+
+
 mc admin service restart myminio
 mc event add myminio/input arn:minio:sqs::1:kafka -p --event put --suffix .json
 

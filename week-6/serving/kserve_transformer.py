@@ -14,9 +14,7 @@ from kserve.protocol.grpc.grpc_predict_v2_pb2 import ModelInferResponse
 logging.basicConfig(level=kserve.constants.KSERVE_LOGLEVEL)
 
 session = boto3.Session()
-client = session.client(
-    "s3", endpoint_url="http://minio-service:9000", aws_access_key_id="minio", aws_secret_access_key="minio123"
-)
+client = session.client("s3", endpoint_url="http://minio-service:9000", aws_access_key_id="minio", aws_secret_access_key="minio123")
 digits_bucket = "output"
 
 
@@ -26,24 +24,9 @@ class ImageTransformer(kserve.Model):
         self.predictor_host = predictor_host
         self._key = None
 
-    async def preprocess(
-        self, inputs: Union[Dict, CloudEvent, InferRequest], headers: Dict[str, str] = None
-    ) -> Union[Dict, InferRequest]:
-        import pickle
-
-        pickle.dump(inputs, open("inputs.pkl", "wb"))
+    def preprocess(self, inputs: Union[Dict, CloudEvent, InferRequest], headers: Dict[str, str] = None) -> Union[Dict, InferRequest]:
 
         logging.info("Received inputs %s", inputs)
-        logging.info("TEST" * 10)
-        # logging.info(inputs)
-        # logging.info(type(inputs))
-        # logging.info(type(inputs['attributes']))
-        # logging.info(inputs['attributes'])
-        # logging.info(inputs['attributes']['data'])
-        # logging.info(type(inputs['attributes']['data']))
-        logging.info("TEST" * 10)
-        import json
-
         data = json.loads(inputs.get_data().decode("utf-8"))
         inputs = data
         if inputs["EventName"] == "s3:ObjectCreated:Put":
@@ -51,15 +34,15 @@ class ImageTransformer(kserve.Model):
             key = inputs["Records"][0]["s3"]["object"]["key"]
             self._key = key
             client.download_file(bucket, key, "/tmp/" + key)
+
             with open("/tmp/" + key, "r") as f:
                 instances = json.load(f)["instances"]
                 logging.info(f"instances {instances}")
+
             return {"instances": instances}
         raise Exception("unknown event")
 
-    def postprocess(
-        self, response: Union[Dict, InferResponse, ModelInferResponse], headers: Dict[str, str] = None
-    ) -> Union[Dict, ModelInferResponse]:
+    def postprocess(self, response: Union[Dict, InferResponse, ModelInferResponse], headers: Dict[str, str] = None) -> Union[Dict, ModelInferResponse]:
         logging.info(
             f"response: {response}",
         )

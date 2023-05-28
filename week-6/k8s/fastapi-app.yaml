@@ -24,7 +24,7 @@ spec:
                 key: WANDB_API_KEY
           resources:
             requests:
-              cpu: 200m                
+              cpu: 200m
 ---
 apiVersion: v1
 kind: Service
@@ -38,3 +38,16 @@ spec:
     protocol: TCP
   selector:
     app: app-fastapi
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: app-fastapi
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: app-fastapi
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 50

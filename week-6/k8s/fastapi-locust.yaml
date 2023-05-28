@@ -8,7 +8,7 @@ spec:
   - command:
     - /bin/sh
     - -c
-    - 'locust -f /app/load-testing/locustfile.py --host=http://app-fastapi.default.svc.cluster.local:8080 --users 50 --spawn-rate 10 --autostart --run-time 600s'
+    - 'locust -f /app/load-testing/locustfile.py --host=http://app-fastapi.default.svc.cluster.local:8080 --users 100 --spawn-rate 20 --autostart --run-time 600s'
     image: kyrylprojector/app-fastapi-week-6:latest
     imagePullPolicy: Always
     name: load
