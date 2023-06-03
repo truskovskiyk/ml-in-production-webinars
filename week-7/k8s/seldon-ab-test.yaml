@@ -32,7 +32,7 @@ spec:
       parameters:
       - name: model_id
         type: STRING
-        value: truskovskiyk/nlp-sample/kfp-pipeline:latest
+        value: truskovskiyk/course-04-2023-week-3/airflow-pipeline:latest
       name: kfp-model
       type: MODEL
     name: default
@@ -67,7 +67,7 @@ spec:
       parameters:
       - name: model_id
         type: STRING
-        value: truskovskiyk/nlp-sample/good-model:v0
+        value: truskovskiyk/course-04-2023-week-3/airflow-pipeline:latest
       name: latest-model
       type: MODEL
     name: shadow

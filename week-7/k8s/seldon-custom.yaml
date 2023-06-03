@@ -12,7 +12,7 @@ spec:
   - componentSpecs:
     - spec:
         containers:
-        - image: kyrylprojector/app-seldon-monitoring:latest
+        - image: kyrylprojector/app-seldon-monitoring-week-7:latest
           name: classifier
           env:
           - name: GUNICORN_THREADS
@@ -37,7 +37,7 @@ spec:
         {
           "name": "model_id",
           "type": "STRING",
-          "value": "truskovskiyk/nlp-sample/kfp-pipeline:latest"
+          "value": "truskovskiyk/course-04-2023-week-3/airflow-pipeline:latest"
         }
       ]
     name: model

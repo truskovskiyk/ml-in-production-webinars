@@ -42,6 +42,8 @@ helm uninstall monitoring
 
 ## Seldon 
 
+Setup 
+
 ```
 kubectl apply -f https://github.com/datawire/ambassador-operator/releases/latest/download/ambassador-operator-crds.yaml
 kubectl apply -n ambassador -f https://github.com/datawire/ambassador-operator/releases/latest/download/ambassador-operator-kind.yaml
@@ -52,14 +54,29 @@ kubectl create namespace seldon-system
 helm install seldon-core seldon-core-operator --version 1.15.1 --repo https://storage.googleapis.com/seldon-charts --set usageMetrics.enabled=true --set ambassador.enabled=true  --namespace seldon-system
 helm install seldon-core-analytics seldon-core-analytics --repo https://storage.googleapis.com/seldon-charts --namespace seldon-system
 
-kubectl port-forward --address 0.0.0.0 -n ambassador svc/ambassador 7777:80
+kubectl port-forward --address 0.0.0.0 -n ambassador svc/ambassador 8080:80
 kubectl port-forward --address 0.0.0.0 svc/seldon-core-analytics-grafana -n seldon-system 3000:80    
 admin/password
-
-kubectl port-forward --address 0.0.0.0 svc/seldon-core-analytics-prometheus-seldon -n seldon-system 5000:80
-
 ```
 
+
+Iris
+
+```
+kubectl create -f ./k8s/seldon-iris.yaml
+open http://0.0.0.0:8080/seldon/default/iris-model/api/v1.0/doc/#/
+{ "data": { "ndarray": [[1,2,3,4]] } }
+{"request": {"data": {"ndarray": [[1,2,3,4]]}}, "truth":{"data": {"ndarray": [[0]]}}}
+```
+
+Custom
+
+```
+kubectl create -f ./k8s/seldon-custom.yaml
+open http://0.0.0.0:8080/seldon/default/nlp-sample/api/v1.0/doc/#/
+{ "data": { "ndarray": ["this is an example"] } }
+{"request": {"data": {"ndarray": ["this is an example"]}}, "truth":{"data": {"ndarray": [[0]]}}}
+```
 
 ## Seldon & Kserve
 
