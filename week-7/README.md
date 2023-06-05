@@ -37,7 +37,7 @@ helm uninstall monitoring
 
 - https://github.com/evidentlyai/evidently
 - https://github.com/SeldonIO/alibi-detect
-- https://github.com/whylabs/whylogs 
+- https://github.com/whylabs/whylogs
 
 
 ## Seldon 
@@ -87,6 +87,7 @@ open http://0.0.0.0:8080/seldon/default/nlp-sample/api/v1.0/doc/#/
 ## Platforms 
 
 - https://docs.arize.com/arize/quickstart
+- https://docs.arize.com/arize/examples
 - https://aws.amazon.com/sagemaker/model-monitor/
 - https://cloud.google.com/vertex-ai/docs/model-monitoring
 
