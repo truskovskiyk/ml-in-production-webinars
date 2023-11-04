@@ -7,7 +7,7 @@ on:
   #     - main
   push:
     branches:
-      - course-04-2023-week-1    
+      - course-27-10-2023-week-1
 
 env:
   IMAGE_ML_APP: app-ml
