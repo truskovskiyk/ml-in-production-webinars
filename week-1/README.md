@@ -164,5 +164,5 @@ modal token new
 ```
 
 ```
-modal run hello.py
+modal run serverless/hello.py
 ```
