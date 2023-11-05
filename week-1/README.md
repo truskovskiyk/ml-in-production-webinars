@@ -151,3 +151,18 @@ kubectl port-forward svc/deployments-app-web 8080:8080
 - [Jenkins](https://www.jenkins.io/)
 - [Travis CI](https://www.travis-ci.com/)
 - [List of Continuous Integration services](https://github.com/ligurio/awesome-ci)
+
+
+
+# Serverless
+
+https://modal.com/apps
+
+```
+pip install modal
+modal token new
+```
+
+```
+modal run serverless/hello.py
+```
