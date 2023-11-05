@@ -99,7 +99,7 @@ python tutorial.py get-dataloader --path-to-save random-data
 ```
 
 
-# Vector search 
+# Vector search
 
 Deploy with Helm 
 
@@ -129,6 +129,9 @@ Run UI
 kubectl port-forward svc/my-vector-db-milvus --address=0.0.0.0 19530:19530
 docker run -p 8000:3000 -e MILVUS_URL=0.0.0.0:19530 zilliz/attu:v2.2.3
 ```
+
+# RAG
+
 
 
 # DVC 
