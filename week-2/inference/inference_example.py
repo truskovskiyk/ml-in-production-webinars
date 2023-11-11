@@ -12,20 +12,6 @@ from dask.distributed import Client
 
 
 
-# thread: th1, th2:  
-#                       th1 (inv(1) -> 10 -> inv (1)) 
-#                       th2 (10 -> inv (1) -> 10)
-#   1 + 10 + 1 + 10 + 1 + 10 = 33
-#   1 + 10 | 10 + 1 + 1 + 10 = 23
-
-# processes
-#                       p1 (inv(100) -> 10 -> inv (100)) 
-#                       p1 (10 -> inv (100) -> 10)
-#   210
-#   330
-#   
-# asyn, green thread
-
 def train_model(x_train: np.ndarray, y_train: np.ndarray) -> DummyClassifier:
     dummy_clf = DummyClassifier(strategy="most_frequent")
     dummy_clf.fit(x_train, y_train)
@@ -135,10 +121,9 @@ def run_inference_dask_main(client, model: DummyClassifier, x_test: np.ndarray, 
     return np.concatenate(y_pred)
 
 
-app = typer.Typer()
 
 
-@app.command()
+
 def run_single_worker(inference_size: int = 100_000_000):
     x_train, y_train, x_test = get_data(inference_size=inference_size)
     model = train_model(x_train, y_train)
@@ -148,7 +133,6 @@ def run_single_worker(inference_size: int = 100_000_000):
     print(f"Inference one worker {time.monotonic() - s} restulst: {res.shape}")
 
 
-@app.command()
 def run_pool(inference_size: int = 100_000_000, max_workers: int = 16):
     x_train, y_train, x_test = get_data(inference_size=inference_size)
     model = train_model(x_train, y_train)
@@ -158,7 +142,6 @@ def run_pool(inference_size: int = 100_000_000, max_workers: int = 16):
     print(f"Inference {max_workers} workers {time.monotonic() - s} restulst: {res.shape}")
 
 
-@app.command()
 def run_ray(inference_size: int = 100_000_000, max_workers: int = 16):
     ray.init()
 
@@ -170,7 +153,6 @@ def run_ray(inference_size: int = 100_000_000, max_workers: int = 16):
     print(f"Inference with Ray {time.monotonic() - s} restulst: {res.shape}")
 
 
-@app.command()
 def run_dask(inference_size: int = 100_000_000, max_workers: int = 16):
     client = Client()
 
@@ -182,5 +164,13 @@ def run_dask(inference_size: int = 100_000_000, max_workers: int = 16):
     print(f"Inference with Dask {time.monotonic() - s} restulst: {res.shape}")
 
 
-if __name__ == "__main__":
+def cli_app():
+    app = typer.Typer()
+    app.command()(run_single_worker)
+    app.command()(run_pool)
+    app.command()(run_ray)
+    app.command()(run_dask)
     app()
+
+if __name__ == "__main__":
+    cli_app()

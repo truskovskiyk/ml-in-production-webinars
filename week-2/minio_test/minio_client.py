@@ -1,9 +1,10 @@
 from pathlib import Path
 from minio import Minio
 import s3fs
+import os
 
-ACCESS_KEY = "minioadmin"
-SECRET_KEY = "minioadmin"
+ACCESS_KEY = os.getenv("AWS_ACCESS_KEY_ID")
+SECRET_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 ENDPOINT = "0.0.0.0:9000"
 
 
@@ -23,7 +24,6 @@ class MinioClientNative:
 
 class MinioClientS3:
     def __init__(self, bucket_name: str) -> None:
-
         fs = s3fs.S3FileSystem(
             key=ACCESS_KEY, secret=SECRET_KEY, use_ssl=False, client_kwargs={"endpoint_url": f"http://{ENDPOINT}"}
         )

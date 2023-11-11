@@ -129,3 +129,5 @@ dmypy.json
 .pyre/
 proj-365603-6a3afdf071c9.json
 README.p.md
+taskfile.yml
+.DS_Store
