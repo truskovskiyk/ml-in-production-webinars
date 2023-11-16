@@ -17,7 +17,7 @@ def generate_text(prompt: str, max_length: int, num_return_sequences: int, model
     return result
 
 
-def generate_examples(prompt_list: List[str], model_name: str = 'google/flan-t5-base', max_length: int = 50, num_return_sequences: int = 2, seed: int = 42):
+def generate_examples(prompt_list: List[str], model_name: str = 'google/flan-t5-large', max_length: int = 50, num_return_sequences: int = 2, seed: int = 42):
     
     set_seed(seed)
     examples = []
@@ -64,7 +64,7 @@ def generate_dataset():
         # "What are the latest developments in space exploration?",
         # "What are some top-rated online courses or certifications?",
         # "What are some effective ways to improve public speaking skills?",
-        "What are the latest trends in digital marketing?",
+        # "What are the latest trends in digital marketing?",
         "What are some fun and creative DIY projects?",
         "What are some effective ways to improve leadership skills?"
     ]

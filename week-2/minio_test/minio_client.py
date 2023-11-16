@@ -25,7 +25,10 @@ class MinioClientNative:
 class MinioClientS3:
     def __init__(self, bucket_name: str) -> None:
         fs = s3fs.S3FileSystem(
-            key=ACCESS_KEY, secret=SECRET_KEY, use_ssl=False, client_kwargs={"endpoint_url": f"http://{ENDPOINT}"}
+            key=ACCESS_KEY, 
+            secret=SECRET_KEY, 
+            use_ssl=False, 
+            client_kwargs={"endpoint_url": f"http://{ENDPOINT}"}
         )
 
         self.client = fs

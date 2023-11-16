@@ -42,6 +42,9 @@ export AWS_ENDPOINT="http://0.0.0.0:9000"
 
 aws s3 ls --endpoint-url $AWS_ENDPOINT
 aws s3api create-bucket --bucket test --endpoint-url $AWS_ENDPOINT 
+
+
+aws s3 cp minio_client.py s3://test/minio_client.py --endpoint-url $AWS_ENDPOINT
 ```
 
 
@@ -109,8 +112,7 @@ python tutorial.py get-dataloader --path-to-save random-data
 ```
 
 
-# DVC 
-
+# DVC
 
 
 Init DVC
@@ -166,7 +168,7 @@ dvc push
 
 
 
-# LakeFS 
+# LakeFS
 
 Generate template 
 
@@ -220,6 +222,18 @@ Reference:
 ## Vectors
 
 https://github.com/huggingface/text-embeddings-inference
+
+
+K = 100 
+
+q
+KNN: 100
+
+ANN(im1): 100 -> 90: R90 ~20ms
+ANN(im2): 100 -> 80: R80 ~10ms
+
+
+ANN(imn): 100 -> 50: R50 ~1ms
 
 ## Vector DBs
 
@@ -305,6 +319,9 @@ graph LR
 ## End2end example
 
 https://github.com/truskovskiyk/surrealdb-docs-retrieval
+https://colinharman.substack.com/p/beware-tunnel-vision-in-ai-retrieval
+https://qdrant.tech/articles/hybrid-search/
+
 
 ## RAG Labeling: Argilla
 
@@ -312,9 +329,6 @@ https://github.com/truskovskiyk/surrealdb-docs-retrieval
 docker run -d --name argilla -p 6900:6900 argilla/argilla-quickstart:latest
 ```
 
-
 https://docs.argilla.io/en/latest/tutorials_and_integrations/tutorials/feedback/fine-tuning-openai-rag-feedback.html
 
-
-## RAG Eval: LLM as a judge
 

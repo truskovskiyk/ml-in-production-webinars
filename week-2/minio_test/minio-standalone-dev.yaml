@@ -26,6 +26,7 @@ spec:
       - name: minio
         # Pulls the default Minio image from Docker Hub
         image: minio/minio:latest
+        # minio server /storage
         args:
         - server
         - /storage
@@ -55,12 +56,11 @@ spec:
   # Read more about access modes here: http://kubernetes.io/docs/user-guide/persistent-volumes/#access-modes
   accessModes:
     - ReadWriteOnce
-  storageClassName: standard
+  storageClassName: S3
   resources:
     # This is the request for storage. Should be available in the cluster.
     requests:
       storage: 10Gi
-
 ---
 apiVersion: v1
 kind: Service

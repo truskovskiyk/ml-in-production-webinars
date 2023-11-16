@@ -38,6 +38,8 @@ def predict(model: DummyClassifier, x: np.ndarray) -> np.ndarray:
 
 def run_inference(model: DummyClassifier, x_test: np.ndarray, batch_size: int = 2048) -> np.ndarray:
     y_pred = []
+    y_batch = predict(model, x_test)
+
     for i in tqdm(range(0, x_test.shape[0], batch_size)):
         x_batch = x_test[i : i + batch_size]
         y_batch = predict(model, x_batch)
@@ -45,7 +47,26 @@ def run_inference(model: DummyClassifier, x_test: np.ndarray, batch_size: int = 
     return np.concatenate(y_pred)
 
 
+    w: 16
+    r: 1GB
+    batch_size: 4000 ~ 500MB
+
+
+    g: 20GB
+    w: 4
+    batch_size: 40000 ~ 500MB
+
+
+
+
+
+
+
+
+
+
 def run_inference_process_pool(model: DummyClassifier, x_test: np.ndarray, max_workers: int = 16) -> np.ndarray:
+
     with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
         chunk_size = len(x_test) // max_workers
 
@@ -125,12 +146,27 @@ def run_inference_dask_main(client, model: DummyClassifier, x_test: np.ndarray, 
 
 
 def run_single_worker(inference_size: int = 100_000_000):
+
     x_train, y_train, x_test = get_data(inference_size=inference_size)
+
     model = train_model(x_train, y_train)
 
     s = time.monotonic()
-    res = run_inference(model=model, x_test=x_test)
-    print(f"Inference one worker {time.monotonic() - s} restulst: {res.shape}")
+
+    y_test_predicted = run_inference(model=model, x_test=x_test)
+
+    print(f"Inference one worker {time.monotonic() - s} restulst: {y_test_predicted.shape}")
+
+
+
+
+
+
+
+
+
+
+
 
 
 def run_pool(inference_size: int = 100_000_000, max_workers: int = 16):
