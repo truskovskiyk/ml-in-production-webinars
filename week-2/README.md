@@ -21,7 +21,7 @@ Based on https://github.com/kubernetes/examples/tree/master/staging/storage/mini
 Deploy 
 
 ```
-kubectl create -f ./minio/minio-standalone.yaml
+kubectl create -f minio-standalone-dev.yaml
 ```
 
 
@@ -36,12 +36,15 @@ kubectl port-forward --address=0.0.0.0 pod/minio 9000 9090
 
 
 ```
-export AWS_ACCESS_KEY_ID="minioadmin"
-export AWS_SECRET_ACCESS_KEY="minioadmin"
+export AWS_ACCESS_KEY_ID="minio"
+export AWS_SECRET_ACCESS_KEY="minio123"
 export AWS_ENDPOINT="http://0.0.0.0:9000"
 
 aws s3 ls --endpoint-url $AWS_ENDPOINT
 aws s3api create-bucket --bucket test --endpoint-url $AWS_ENDPOINT 
+
+
+aws s3 cp minio_client.py s3://test/minio_client.py --endpoint-url $AWS_ENDPOINT
 ```
 
 
@@ -60,15 +63,24 @@ pytest test_minio_client.py
 # CVS inference 
 
 ```
-python3 inference_example.py run-single-worker --inference-size 10000000
-python3 inference_example.py run-pool --inference-size 10000000
-python3 inference_example.py run-ray --inference-size 10000000
-python3 inference_example.py run-dask --inference-size 10000000
+python inference_example.py run-single-worker --inference-size 10000000
+python inference_example.py run-pool --inference-size 10000000
+python inference_example.py run-ray --inference-size 10000000
+python inference_example.py run-dask --inference-size 10000000
 ```
 
 # Pandas profiling 
 
 https://aaltoscicomp.github.io/python-for-scicomp/data-formats/
+
+
+![alt text](./images/pandas-formats.png)
+
+# Pormising new format: Lance
+
+- https://github.com/lancedb/lance
+- [An Empirical Evaluation of Columnar Storage Formats](https://arxiv.org/abs/2304.05028)
+
 
 
 # Streaming dataset
@@ -77,6 +89,7 @@ https://aaltoscicomp.github.io/python-for-scicomp/data-formats/
 - https://github.com/aws/amazon-s3-plugin-for-pytorch
 - https://pytorch.org/blog/efficient-pytorch-io-library-for-large-datasets-many-files-many-gpus/
 - https://github.com/webdataset/webdataset
+- https://github.com/mosaicml/streaming
 
 
 
@@ -99,40 +112,7 @@ python tutorial.py get-dataloader --path-to-save random-data
 ```
 
 
-# Vector search 
-
-Deploy with Helm 
-
-
-```
-kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.5.3/cert-manager.yaml
-helm repo add milvus https://milvus-io.github.io/milvus-helm/
-helm repo update
-helm upgrade --install vector-search --set cluster.enabled=false --set etcd.replicaCount=1 --set pulsar.enabled=false --set minio.mode=standalone milvus/milvus
-```
-
-Deploy with kubeclt
-
-
-```
-kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.5.3/cert-manager.yaml
-helm repo add milvus https://milvus-io.github.io/milvus-helm/
-helm repo update
-helm template --set cluster.enabled=false --set etcd.replicaCount=1 --set pulsar.enabled=false --set minio.mode=standalone milvus/milvus > milvus.yaml
-kubeclt create -f milvus.yaml
-```
-
-Run UI 
-
-
-```
-kubectl port-forward svc/my-vector-db-milvus --address=0.0.0.0 19530:19530
-docker run -p 8000:3000 -e MILVUS_URL=0.0.0.0:19530 zilliz/attu:v2.2.3
-```
-
-
-# DVC 
-
+# DVC
 
 
 Init DVC
@@ -187,16 +167,8 @@ dvc push
 - https://github.com/iterative/dataset-registry
 
 
-# Labeling 
 
-Install label-studio in docker
-
-```
-docker run -it -p 8080:8080 -v `pwd`/mydata:/label-studio/data heartexlabs/label-studio:latest
-```
-
-
-# LakeFS 
+# LakeFS
 
 Generate template 
 
@@ -223,5 +195,140 @@ kubectl port-forward svc/my-lakefs 5000:80
 - https://docs.lakefs.io/integrations/python.html
 - https://docs.lakefs.io/integrations/kubeflow.html
 
+
+# Labeling: Label-studio and RLHF
+
+```
+docker run -it -p 8080:8080 -v `pwd`/mydata:/label-studio/data heartexlabs/label-studio:latest
+```
+
+```
+python generate_mock_rlhf_dataset.py
+```
+
+Reference:
+
+- https://labelstud.io/blog/create-a-high-quality-rlhf-dataset/
+- https://github.com/HumanSignal/RLHF
+- https://github.com/huggingface/trl
+- https://huggingface.co/google/flan-t5-base
+- https://docs.argilla.io/en/latest/tutorials_and_integrations/tutorials/feedback/train-reward-model-rlhf.html
+
+
+
+
+# RAG
+
+## Vectors
+
+https://github.com/huggingface/text-embeddings-inference
+
+
+K = 100 
+
+q
+KNN: 100
+
+ANN(im1): 100 -> 90: R90 ~20ms
+ANN(im2): 100 -> 80: R80 ~10ms
+
+
+ANN(imn): 100 -> 50: R50 ~1ms
+
+## Vector DBs
+
+https://llm-stack-rag.streamlit.app/
+
+- https://github.com/erikbern/ann-benchmarks
+- https://github.com/harsha-simhadri/big-ann-benchmarks
+- https://qdrant.tech/benchmarks/
+
+
+## QDrant example
+
+https://github.com/qdrant/qdrant
+
+## Milvus example
+
+
+Deploy with Helm 
+
+
+```
+kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.5.3/cert-manager.yaml
+helm repo add milvus https://milvus-io.github.io/milvus-helm/
+helm repo update
+helm upgrade --install vector-search --set cluster.enabled=false --set etcd.replicaCount=1 --set pulsar.enabled=false --set minio.mode=standalone milvus/milvus
+```
+
+Deploy with kubeclt
+
+
+```
+kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.5.3/cert-manager.yaml
+helm repo add milvus https://milvus-io.github.io/milvus-helm/
+helm repo update
+helm template --set cluster.enabled=false --set etcd.replicaCount=1 --set pulsar.enabled=false --set minio.mode=standalone milvus/milvus > milvus.yaml
+kubeclt create -f milvus.yaml
+```
+
+Run UI 
+
+
+```
+kubectl port-forward svc/my-vector-db-milvus --address=0.0.0.0 19530:19530
+docker run -p 8000:3000 -e MILVUS_URL=0.0.0.0:19530 zilliz/attu:v2.2.3
+```
+
+## RAG pattern
+
+# A RAG system can be evaluated with different goals in mind
+
+## Domain Agnostic Evaluation
+In this approach, our primary objective of evaluation is to assess the speed and efficiency of the RAG system from a technical perspective. In this case, the evaluation isn't dependent on the domain or specific content of the datasets/vectors and the two areas of assessment are as follows:
+
+- **Ingestion Effectiveness**: how fast and cost effective is the system in terms of ingesting the relevant data?
+- **Retrieval Effectiveness**: how fast and cost effective is the system at retrieving results given the user request?
+
+## Domain Specific Evaluation
+Alternatively evaluation may focus on the quality of what the system produces, this is not in the scope of our work at this time.
+
+- **Retrieval Accuracy**: how well does the system retrieve the right information from the database given the request?
+- **Response Accuracy**: how well does the system generate a response, given the user request?
+
+### Mermaid Diagram
+
+```mermaid
+graph LR
+    A[Ingestion] -->|Company Data| B[Generate Embeddings]
+    B --> C[Retrieval]
+    C -->|User Request| D[Supported Context]
+    D -->|Prompt| E[LLM]
+    E -->|Generated Response| F[Response Accuracy]
+    C -->|Database Query| G[Retrieval Accuracy]
+
+    A -->|A. Ingestion Effectiveness| H[Storage]
+    H -->|Object Storage| I
+    H -->|Relational DB| J
+    H -->|Document / NoSQL DB| K
+    H -->|Vector DB| L
+
+    C -->|B. Retrieval Effectiveness| M[Response]
+```
+
+## End2end example
+
+https://github.com/truskovskiyk/surrealdb-docs-retrieval
+https://colinharman.substack.com/p/beware-tunnel-vision-in-ai-retrieval
+https://qdrant.tech/articles/hybrid-search/
+
+
+## RAG Labeling: Argilla
+
+```
+docker run -d --name argilla -p 6900:6900 argilla/argilla-quickstart:latest
+```
+
+https://docs.argilla.io/en/latest/tutorials_and_integrations/tutorials/feedback/fine-tuning-openai-rag-feedback.html
 
 

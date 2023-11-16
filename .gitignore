@@ -128,4 +128,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 proj-365603-6a3afdf071c9.json
-week-1/README.p.md
+README.p.md
+taskfile.yml
+.DS_Store

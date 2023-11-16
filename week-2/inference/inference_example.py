@@ -12,20 +12,6 @@ from dask.distributed import Client
 
 
 
-# thread: th1, th2:  
-#                       th1 (inv(1) -> 10 -> inv (1)) 
-#                       th2 (10 -> inv (1) -> 10)
-#   1 + 10 + 1 + 10 + 1 + 10 = 33
-#   1 + 10 | 10 + 1 + 1 + 10 = 23
-
-# processes
-#                       p1 (inv(100) -> 10 -> inv (100)) 
-#                       p1 (10 -> inv (100) -> 10)
-#   210
-#   330
-#   
-# asyn, green thread
-
 def train_model(x_train: np.ndarray, y_train: np.ndarray) -> DummyClassifier:
     dummy_clf = DummyClassifier(strategy="most_frequent")
     dummy_clf.fit(x_train, y_train)
@@ -52,6 +38,8 @@ def predict(model: DummyClassifier, x: np.ndarray) -> np.ndarray:
 
 def run_inference(model: DummyClassifier, x_test: np.ndarray, batch_size: int = 2048) -> np.ndarray:
     y_pred = []
+    y_batch = predict(model, x_test)
+
     for i in tqdm(range(0, x_test.shape[0], batch_size)):
         x_batch = x_test[i : i + batch_size]
         y_batch = predict(model, x_batch)
@@ -59,7 +47,26 @@ def run_inference(model: DummyClassifier, x_test: np.ndarray, batch_size: int = 
     return np.concatenate(y_pred)
 
 
+    w: 16
+    r: 1GB
+    batch_size: 4000 ~ 500MB
+
+
+    g: 20GB
+    w: 4
+    batch_size: 40000 ~ 500MB
+
+
+
+
+
+
+
+
+
+
 def run_inference_process_pool(model: DummyClassifier, x_test: np.ndarray, max_workers: int = 16) -> np.ndarray:
+
     with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
         chunk_size = len(x_test) // max_workers
 
@@ -135,20 +142,33 @@ def run_inference_dask_main(client, model: DummyClassifier, x_test: np.ndarray, 
     return np.concatenate(y_pred)
 
 
-app = typer.Typer()
 
 
-@app.command()
+
 def run_single_worker(inference_size: int = 100_000_000):
+
     x_train, y_train, x_test = get_data(inference_size=inference_size)
+
     model = train_model(x_train, y_train)
 
     s = time.monotonic()
-    res = run_inference(model=model, x_test=x_test)
-    print(f"Inference one worker {time.monotonic() - s} restulst: {res.shape}")
+
+    y_test_predicted = run_inference(model=model, x_test=x_test)
+
+    print(f"Inference one worker {time.monotonic() - s} restulst: {y_test_predicted.shape}")
 
 
-@app.command()
+
+
+
+
+
+
+
+
+
+
+
 def run_pool(inference_size: int = 100_000_000, max_workers: int = 16):
     x_train, y_train, x_test = get_data(inference_size=inference_size)
     model = train_model(x_train, y_train)
@@ -158,7 +178,6 @@ def run_pool(inference_size: int = 100_000_000, max_workers: int = 16):
     print(f"Inference {max_workers} workers {time.monotonic() - s} restulst: {res.shape}")
 
 
-@app.command()
 def run_ray(inference_size: int = 100_000_000, max_workers: int = 16):
     ray.init()
 
@@ -170,7 +189,6 @@ def run_ray(inference_size: int = 100_000_000, max_workers: int = 16):
     print(f"Inference with Ray {time.monotonic() - s} restulst: {res.shape}")
 
 
-@app.command()
 def run_dask(inference_size: int = 100_000_000, max_workers: int = 16):
     client = Client()
 
@@ -182,5 +200,13 @@ def run_dask(inference_size: int = 100_000_000, max_workers: int = 16):
     print(f"Inference with Dask {time.monotonic() - s} restulst: {res.shape}")
 
 
-if __name__ == "__main__":
+def cli_app():
+    app = typer.Typer()
+    app.command()(run_single_worker)
+    app.command()(run_pool)
+    app.command()(run_ray)
+    app.command()(run_dask)
     app()
+
+if __name__ == "__main__":
+    cli_app()
