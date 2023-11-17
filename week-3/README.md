@@ -10,7 +10,6 @@
 
 # Example ML model with testing
 
-
 [nlp-sample](./nlp-sample)
 
 
@@ -20,7 +19,6 @@ https://neptune.ai/blog/best-ml-experiment-tracking-tools
 
 ## AIM 
 
-https://neptune.ai/blog/best-ml-experiment-tracking-tools
 https://github.com/aimhubio/aim
 
 
