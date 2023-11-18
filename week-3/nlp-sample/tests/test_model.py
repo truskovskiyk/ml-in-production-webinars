@@ -82,7 +82,7 @@ def test_train_to_completion(config_path: Path):
     train(config_path=config_path)
     result_path = Path("/tmp/results")
     assert result_path.exists()
-    assert (result_path / "pytorch_model.bin").exists()
+    assert (result_path / "model.safetensors").exists()
     assert (result_path / "training_args.bin").exists()
     assert (result_path / "all_results.json").exists()
     assert (result_path / "README.md").exists()

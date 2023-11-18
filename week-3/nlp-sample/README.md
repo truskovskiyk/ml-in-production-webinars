@@ -10,10 +10,10 @@ make build
 
 ```
 make run_dev
-cd /main 
+cd /main
 export PYTHONPATH=.
-export WANDB_PROJECT=my-awesome-project
-export WANDB_API_KEY=****************
+export WANDB_PROJECT=course-27-10-2023-week-3
+export WANDB_API_KEY=************************
 ```
 
 ## Test

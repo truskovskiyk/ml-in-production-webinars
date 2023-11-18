@@ -165,8 +165,6 @@ def train(config_path: Path):
         tokenizer=tokenizer,
     )
 
-    # Training
-    # wandb.init(project="my-test-project")
 
     train_result = trainer.train()
     metrics = train_result.metrics
