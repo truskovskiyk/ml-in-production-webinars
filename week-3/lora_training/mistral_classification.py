@@ -36,20 +36,31 @@ from sklearn.metrics import (
     recall_score,
 )
 
-from prompts import get_newsgroup_data_for_ft
+from lora_training.datasets import get_newsgroup_data_for_ft
 
-
-from prompts import get_newsgroup_data_for_ft
 
 metric = evaluate.load("rouge")
 warnings.filterwarnings("ignore")
 
 
-def training_llm(args):
+
+def training_llm(
+        pretrained_ckpt: str = "mistralai/Mistral-7B-v0.1", 
+        lora_r: int = 8, 
+        epochs: int = 5, 
+        dropout: float = 0.1, 
+        train_sample_fraction: float = 0.99):
+    
+    pretrained_ckpt: str = "mistralai/Mistral-7B-v0.1"
+    lora_r: int = 8
+    epochs: int = 5 
+    dropout: float = 0.1
+    train_sample_fraction: float = 0.99
+    
     train_dataset, test_dataset = get_newsgroup_data_for_ft(
-        mode="train", train_sample_fraction=args.train_sample_fraction
+        mode="train", train_sample_fraction=train_sample_fraction
     )
-    print(f"Sample fraction:{args.train_sample_fraction}")
+    print(f"Sample fraction:{train_sample_fraction}")
     print(f"Training samples:{train_dataset.shape}")
 
     # BitsAndBytesConfig int-4 config
@@ -62,22 +73,22 @@ def training_llm(args):
 
     # Load model and tokenizer
     model = AutoModelForCausalLM.from_pretrained(
-        args.pretrained_ckpt,
+        pretrained_ckpt,
         quantization_config=bnb_config,
         use_cache=False,
         device_map="auto",
     )
     model.config.pretraining_tp = 1
 
-    tokenizer = AutoTokenizer.from_pretrained(args.pretrained_ckpt)
+    tokenizer = AutoTokenizer.from_pretrained(pretrained_ckpt)
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"
 
     # LoRA config based on QLoRA paper
     peft_config = LoraConfig(
         lora_alpha=16,
-        lora_dropout=args.dropout,
-        r=args.lora_r,
+        lora_dropout=dropout,
+        r=lora_r,
         bias="none",
         task_type="CAUSAL_LM",
     )
@@ -86,12 +97,12 @@ def training_llm(args):
     model = prepare_model_for_kbit_training(model)
     model = get_peft_model(model, peft_config)
 
-    results_dir = f"experiments/classification-sampleFraction-{args.train_sample_fraction}_epochs-{args.epochs}_rank-{args.lora_r}_dropout-{args.dropout}"
+    results_dir = f"experiments/classification"
 
     training_args = TrainingArguments(
         output_dir=results_dir,
         logging_dir=f"{results_dir}/logs",
-        num_train_epochs=args.epochs,
+        num_train_epochs=epochs,
         per_device_train_batch_size=4,
         gradient_accumulation_steps=2,
         gradient_checkpointing=True,

@@ -36,13 +36,18 @@ kubectl port-forward svc/my-aim-service  8080:80 --namespace default
 
 # LLMs for everything
 
-## LoRA
+## LoRA & Peft
 
-## Perf
+- https://www.anyscale.com/blog/fine-tuning-llms-lora-or-full-parameter-an-in-depth-analysis-with-llama-2
+- https://github.com/huggingface/peft
 
-## 
+## Experiments 
 
 - https://github.com/georgian-io/LLM-Finetuning-Hub
+- https://medium.com/georgian-impact-blog/the-practical-guide-to-llms-llama-2-cdf21d540ce3
+
+## Experiments 
+
 
 # Distributed training 
 
