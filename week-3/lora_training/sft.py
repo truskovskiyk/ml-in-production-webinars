@@ -15,32 +15,7 @@ from pprint import pprint
 tqdm.pandas()
 
 
-def inference():
 
-    for instruct, label in tqdm(zip(instructions, labels)):
-        input_ids = tokenizer(
-            instruct, return_tensors="pt", truncation=True
-        ).input_ids.cuda()
-
-        with torch.inference_mode():
-            try:
-                outputs = model.generate(
-                    input_ids=input_ids,
-                    max_new_tokens=20,
-                    do_sample=True,
-                    top_p=0.95,
-                    temperature=1e-3,
-                )
-                result = tokenizer.batch_decode(
-                    outputs.detach().cpu().numpy(), skip_special_tokens=True
-                )[0]
-                result = result[len(instruct) :]
-                print(result)
-            except:
-                result = ""
-                oom_examples.append(input_ids.shape[-1])
-
-            results.append(result)
 
 @dataclass
 class ScriptArguments:
@@ -49,7 +24,7 @@ class ScriptArguments:
     """
 
     model_name: Optional[str] = field(default="facebook/opt-350m", metadata={"help": "the model name"})
-    dataset_text_field: Optional[str] = field(default="text", metadata={"help": "the text field of the dataset"})
+    dataset_text_field: Optional[str] = field(default="instructions", metadata={"help": "the text field of the dataset"})
 
     log_with: Optional[str] = field(default="none", metadata={"help": "use 'wandb' to log with wandb"})
     learning_rate: Optional[float] = field(default=1.41e-5, metadata={"help": "the learning rate"})
@@ -102,21 +77,23 @@ model = AutoModelForCausalLM.from_pretrained(
 )
 
 # Step 2: Load the dataset
+from lora_training.datasets_prep import get_newsgroup_data_for_ft
+train_dataset, _ = get_newsgroup_data_for_ft(mode="train", train_sample_fraction=0.99)
 # dataset = load_dataset(script_args.dataset_name, split="train")
-dataset = load_dataset("glue", "cola", split="train")
-dataset = dataset.shuffle()
-dataset = dataset.select(range(1000))
-example = dataset[:3]
+# dataset = load_dataset("glue", "cola", split="train")
+# dataset = dataset.shuffle()
+# dataset = dataset.select(range(1000))
+# example = dataset[:3]
 
-def formatting_prompts_func(example):
-    output_texts = []
-    for i in range(len(example['sentence'])):
-        result = "Correct" if example['label'][i] == 1 else "Incorrect"
-        text = f"### Sentence: {example['sentence'][i]}\n ### Result: {result}"
-        output_texts.append(text)
-    return output_texts
+# def formatting_prompts_func(example):
+#     output_texts = []
+#     for i in range(len(example['sentence'])):
+#         result = "Correct" if example['label'][i] == 1 else "Incorrect"
+#         text = f"### Sentence: {example['sentence'][i]}\n ### Result: {result}"
+#         output_texts.append(text)
+#     return output_texts
 
-formatting_prompts_func(example=example)
+# formatting_prompts_func(example=example)
 
 # Step 3: Define the training arguments
 training_args = TrainingArguments(
@@ -152,10 +129,10 @@ trainer = SFTTrainer(
     model=model,
     args=training_args,
     max_seq_length=script_args.seq_length,
-    train_dataset=dataset,
-    formatting_func=formatting_prompts_func,
-    # dataset_text_field=script_args.dataset_text_field,
+    train_dataset=train_dataset,
+    dataset_text_field=script_args.dataset_text_field,
     peft_config=peft_config,
+    packing=True,
 )
 
 trainer.train()
@@ -164,11 +141,11 @@ trainer.train()
 trainer.save_model(script_args.output_dir)
 
 
-instruct = '### Sentence: John is shorter than five feet.\n ### Result:'
+# instruct = '### Sentence: John is shorter than five feet.\n ### Result:'
 
-tokenizer = trainer.tokenizer
-input_ids = tokenizer(instruct, return_tensors="pt", truncation=True).input_ids.cuda()
+# tokenizer = trainer.tokenizer
+# input_ids = tokenizer(instruct, return_tensors="pt", truncation=True).input_ids.cuda()
 
 
-outputs = model.generate(input_ids=input_ids, max_new_tokens=20, do_sample=True, top_p=0.95, temperature=1e-3)
-result = tokenizer.batch_decode(outputs.detach().cpu().numpy(), skip_special_tokens=True)[0]
+# outputs = model.generate(input_ids=input_ids, max_new_tokens=20, do_sample=True, top_p=0.95, temperature=1e-3)
+# result = tokenizer.batch_decode(outputs.detach().cpu().numpy(), skip_special_tokens=True)[0]

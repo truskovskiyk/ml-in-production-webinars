@@ -37,11 +37,6 @@ kubectl port-forward svc/my-aim-service  8080:80 --namespace default
 # LLMs for everything
 
 
-python lora_training/sft.py --log_with wandb --batch_size 8 --load_in_4bit --use_peft
-
-python lora_training/sft.py --model_name google/flan-t5-large --batch_size 8 --load_in_4bit --use_peft
-
-
 ## LoRA & Peft
 
 - https://www.anyscale.com/blog/fine-tuning-llms-lora-or-full-parameter-an-in-depth-analysis-with-llama-2
@@ -52,6 +47,30 @@ python lora_training/sft.py --model_name google/flan-t5-large --batch_size 8 --l
 - https://github.com/georgian-io/LLM-Finetuning-Hub
 - https://medium.com/georgian-impact-blog/the-practical-guide-to-llms-llama-2-cdf21d540ce3
  
+## Run example
+
+python lora_training/sft.py --log_with wandb --batch_size 8 --load_in_4bit --use_peft
+python lora_training/sft.py --model_name google/flan-t5-large --batch_size 8 --load_in_4bit --use_peft
+https://github.com/brevdev/notebooks/blob/main/mistral-finetune-own-data.ipynb
+
+## Run example RLHF
+
+
+https://github.com/huggingface/trl/tree/main/examples/research_projects/stack_llama_2/scripts
+
+
+## Eval:
+
+- https://github.com/explodinggradients/ragas
+- https://github.com/NVIDIA/NeMo-Guardrails
+- https://github.com/guardrail-ml/guardrail
+- https://github.com/promptfoo/promptfoo
+- https://github.com/confident-ai/deepeval
+
+
+
+
+
 
 
 # Distributed training 
