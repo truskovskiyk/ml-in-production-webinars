@@ -31,7 +31,6 @@ def training_args() -> TrainingArguments:
 def trainer_with_one_batch(
     model_args: ModelArguments, data_args: DataTrainingArguments, training_args: TrainingArguments
 ) -> Trainer:
-
     raw_datasets, num_labels, label_list = read_dataset(data_args=data_args, cache_dir=model_args.cache_dir)
     config, tokenizer, model = get_models(model_args=model_args, num_labels=num_labels)
     train_dataset, eval_dataset = process_dataset(

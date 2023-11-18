@@ -63,7 +63,6 @@ def get_models(model_args, num_labels):
 
 
 def process_dataset(data_args, label_list, model, config, tokenizer, training_args, raw_datasets):
-
     padding = "max_length" if data_args.pad_to_max_length else False
     label_to_id = {v: i for i, v in enumerate(label_list)}
 
@@ -164,7 +163,6 @@ def train(config_path: Path):
         eval_dataset=eval_dataset,
         tokenizer=tokenizer,
     )
-
 
     train_result = trainer.train()
     metrics = train_result.metrics

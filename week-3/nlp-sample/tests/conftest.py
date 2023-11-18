@@ -21,7 +21,6 @@ def data_path() -> Path:
 
 @pytest.fixture(scope="session")
 def data(data_path: Path) -> Tuple[PandasDataset, PandasDataset]:
-
     df_train = pd.read_csv(data_path / "train.csv")
     df_val = pd.read_csv(data_path / "val.csv")
     df_test = pd.read_csv(data_path / "test.csv")
