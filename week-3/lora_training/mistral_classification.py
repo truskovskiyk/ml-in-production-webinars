@@ -36,7 +36,9 @@ from sklearn.metrics import (
     recall_score,
 )
 
-from lora_training.datasets import get_newsgroup_data_for_ft
+from lora_training.datasets_prep import get_newsgroup_data_for_ft
+
+
 
 
 metric = evaluate.load("rouge")
@@ -45,23 +47,22 @@ warnings.filterwarnings("ignore")
 
 
 def training_llm(
-        pretrained_ckpt: str = "mistralai/Mistral-7B-v0.1", 
-        lora_r: int = 8, 
-        epochs: int = 5, 
-        dropout: float = 0.1, 
-        train_sample_fraction: float = 0.99):
+    pretrained_ckpt: str = "mistralai/Mistral-7B-v0.1", 
+    lora_r: int = 8, 
+    epochs: int = 5, 
+    dropout: float = 0.1, 
+    train_sample_fraction: float = 0.99):
     
-    pretrained_ckpt: str = "mistralai/Mistral-7B-v0.1"
-    lora_r: int = 8
-    epochs: int = 5 
-    dropout: float = 0.1
-    train_sample_fraction: float = 0.99
+    # pretrained_ckpt: str = "mistralai/Mistral-7B-v0.1"
+    # lora_r: int = 8
+    # epochs: int = 5 
+    # dropout: float = 0.1
+    # train_sample_fraction: float = 0.99
     
-    train_dataset, test_dataset = get_newsgroup_data_for_ft(
-        mode="train", train_sample_fraction=train_sample_fraction
-    )
+    train_dataset, test_dataset = get_newsgroup_data_for_ft(mode="train", train_sample_fraction=train_sample_fraction)
     print(f"Sample fraction:{train_sample_fraction}")
     print(f"Training samples:{train_dataset.shape}")
+    print(f"Training sample idx = 0\n:{train_dataset['instructions'][0]}")
 
     # BitsAndBytesConfig int-4 config
     bnb_config = BitsAndBytesConfig(
@@ -96,7 +97,8 @@ def training_llm(
     # prepare model for training
     model = prepare_model_for_kbit_training(model)
     model = get_peft_model(model, peft_config)
-
+    model.print_trainable_parameters()
+    
     results_dir = f"experiments/classification"
 
     training_args = TrainingArguments(
@@ -115,11 +117,8 @@ def training_llm(
         warmup_ratio=0.03,
         lr_scheduler_type="constant",
         report_to="none",
-        # disable_tqdm=True # disable tqdm since with packing values are in correct
     )
-
     max_seq_length = 512  # max sequence length for model and packing of the dataset
-
     trainer = SFTTrainer(
         model=model,
         train_dataset=train_dataset,
@@ -138,15 +137,6 @@ def training_llm(
     peft_model_id = f"{results_dir}/assets"
     trainer.model.save_pretrained(peft_model_id)
     tokenizer.save_pretrained(peft_model_id)
-
-    with open(f"{results_dir}/results.pkl", "wb") as handle:
-        run_result = [
-            args.epochs,
-            args.lora_r,
-            args.dropout,
-            train_loss,
-        ]
-        pickle.dump(run_result, handle)
     print("Experiment over")
 
 def inference_llm(args):
@@ -217,23 +207,32 @@ def inference_llm(args):
     print("----------------------------------------")
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--experiment_dir",
-        default="experiments/classification-sampleFraction-0.1_epochs-5_rank-8_dropout-0.1",
-    )
+def cli():
+    app = typer.Typer()
+    app.command()(training_llm)
+    app()
 
-    args = parser.parse_args()
-    main(args)
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--pretrained_ckpt", default="mistralai/Mistral-7B-v0.1")
-    parser.add_argument("--lora_r", default=8, type=int)
-    parser.add_argument("--epochs", default=5, type=int)
-    parser.add_argument("--dropout", default=0.1, type=float)
-    parser.add_argument("--train_sample_fraction", default=0.99, type=float)
+# if __name__ == "__main__":
+#     parser = argparse.ArgumentParser()
+#     parser.add_argument(
+#         "--experiment_dir",
+#         default="experiments/classification-sampleFraction-0.1_epochs-5_rank-8_dropout-0.1",
+#     )
 
-    args = parser.parse_args()
-    main(args)
+#     args = parser.parse_args()
+#     main(args)
+
+# if __name__ == "__main__":
+#     parser = argparse.ArgumentParser()
+#     parser.add_argument("--pretrained_ckpt", default="mistralai/Mistral-7B-v0.1")
+#     parser.add_argument("--lora_r", default=8, type=int)
+#     parser.add_argument("--epochs", default=5, type=int)
+#     parser.add_argument("--dropout", default=0.1, type=float)
+#     parser.add_argument("--train_sample_fraction", default=0.99, type=float)
+
+#     args = parser.parse_args()
+#     main(args)
+
+if __name__ == '__main__':
+    cli()
