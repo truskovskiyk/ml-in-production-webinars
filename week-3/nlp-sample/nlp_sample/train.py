@@ -145,6 +145,7 @@ def train(config_path: Path):
 
     raw_datasets, num_labels, label_list = read_dataset(data_args=data_args, cache_dir=model_args.cache_dir)
     config, tokenizer, model = get_models(model_args=model_args, num_labels=num_labels)
+    
     train_dataset, eval_dataset = process_dataset(
         data_args=data_args,
         label_list=label_list,

@@ -1,9 +1,4 @@
-import argparse
 import torch
-import os
-import numpy as np
-import pandas as pd
-import pickle
 import typer
 
 from peft import (
@@ -22,7 +17,6 @@ import argparse
 import torch
 import os
 import pandas as pd
-import evaluate
 import pickle
 import warnings
 from tqdm import tqdm
@@ -36,28 +30,27 @@ from sklearn.metrics import (
     recall_score,
 )
 
-from lora_training.datasets_prep import get_newsgroup_data_for_ft
+# from lora_training.datasets_prep import get_newsgroup_data_for_ft
 
-
-
-
-metric = evaluate.load("rouge")
 warnings.filterwarnings("ignore")
 
 
 
+
+
+
 def training_llm(
-    pretrained_ckpt: str = "mistralai/Mistral-7B-v0.1", 
+    # pretrained_ckpt: str = "mistralai/Mistral-7B-v0.1", 
+
+    # pretrained_ckpt: str = "microsoft/phi-1_5", 
+    # pretrained_ckpt: str = "facebook/opt-350m", 
+    
     lora_r: int = 8, 
     epochs: int = 5, 
     dropout: float = 0.1, 
-    train_sample_fraction: float = 0.99):
+    train_sample_fraction: float = 0.25
+    ):
     
-    # pretrained_ckpt: str = "mistralai/Mistral-7B-v0.1"
-    # lora_r: int = 8
-    # epochs: int = 5 
-    # dropout: float = 0.1
-    # train_sample_fraction: float = 0.99
     
     train_dataset, test_dataset = get_newsgroup_data_for_ft(mode="train", train_sample_fraction=train_sample_fraction)
     print(f"Sample fraction:{train_sample_fraction}")
@@ -98,14 +91,14 @@ def training_llm(
     model = prepare_model_for_kbit_training(model)
     model = get_peft_model(model, peft_config)
     model.print_trainable_parameters()
-    
+
     results_dir = f"experiments/classification"
 
     training_args = TrainingArguments(
         output_dir=results_dir,
         logging_dir=f"{results_dir}/logs",
         num_train_epochs=epochs,
-        per_device_train_batch_size=4,
+        per_device_train_batch_size=8,
         gradient_accumulation_steps=2,
         gradient_checkpointing=True,
         optim="paged_adamw_32bit",
@@ -139,10 +132,10 @@ def training_llm(
     tokenizer.save_pretrained(peft_model_id)
     print("Experiment over")
 
-def inference_llm(args):
+def inference_llm(experiment_dir: str = 'experiments/classification'):
     _, test_dataset = get_newsgroup_data_for_ft(mode="inference")
 
-    experiment = args.experiment_dir
+    experiment = experiment_dir
     peft_model_id = f"{experiment}/assets"
 
     # load base LLM model and tokenizer
@@ -178,6 +171,7 @@ def inference_llm(args):
                 result = tokenizer.batch_decode(
                     outputs.detach().cpu().numpy(), skip_special_tokens=True
                 )[0]
+
                 result = result[len(instruct) :]
                 print(result)
             except:
@@ -195,14 +189,6 @@ def inference_llm(args):
         "oom_examples": oom_examples,
     }
     print(metrics)
-
-    save_dir = os.path.join(experiment, "metrics")
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
-
-    with open(os.path.join(save_dir, "metrics.pkl"), "wb") as handle:
-        pickle.dump(metrics, handle)
-
     print(f"Completed experiment {peft_model_id}")
     print("----------------------------------------")
 
@@ -210,6 +196,7 @@ def inference_llm(args):
 def cli():
     app = typer.Typer()
     app.command()(training_llm)
+    app.command()(inference_llm)
     app()
 
 

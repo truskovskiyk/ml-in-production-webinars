@@ -13,7 +13,7 @@ make run_dev
 cd /main
 export PYTHONPATH=.
 export WANDB_PROJECT=course-27-10-2023-week-3
-export WANDB_API_KEY=************************
+export WANDB_API_KEY=***********************
 ```
 
 ## Test

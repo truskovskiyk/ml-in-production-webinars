@@ -18,8 +18,7 @@ from trl.trainer import ConstantLengthDataset
 
 @dataclass
 class ScriptArguments:
-    model_name: Optional[str] = field(default="meta-llama/Llama-2-7b-hf", metadata={"help": "the model name"})
-
+    model_name: Optional[str] = field(default="facebook/opt-350m", metadata={"help": "the model name"})
     dataset_name: Optional[str] = field(default="lvwerra/stack-exchange-paired", metadata={"help": "the dataset name"})
     subset: Optional[str] = field(default="data/finetune", metadata={"help": "the subset to use"})
     split: Optional[str] = field(default="train", metadata={"help": "the split to use"})
@@ -35,7 +34,7 @@ class ScriptArguments:
             max_steps=500,
             logging_steps=10,
             save_steps=10,
-            per_device_train_batch_size=4,
+            per_device_train_batch_size=2,
             per_device_eval_batch_size=1,
             gradient_accumulation_steps=2,
             gradient_checkpointing=False,
@@ -66,7 +65,7 @@ class ScriptArguments:
     )
 
 
-script_args = tyro.cli(ScriptArguments)
+script_args = ScriptArguments()
 
 if script_args.training_args.group_by_length and script_args.packing:
     raise ValueError("Cannot use both packing and group by length")
@@ -119,7 +118,6 @@ def create_datasets(tokenizer, args):
         args.dataset_name,
         data_dir=args.subset,
         split=args.split,
-        use_auth_token=True,
         num_proc=args.num_workers if not args.streaming else None,
         streaming=args.streaming,
     )
@@ -167,7 +165,6 @@ base_model = AutoModelForCausalLM.from_pretrained(
     quantization_config=bnb_config,
     device_map={"": Accelerator().local_process_index},
     trust_remote_code=True,
-    use_auth_token=True,
 )
 base_model.config.use_cache = False
 

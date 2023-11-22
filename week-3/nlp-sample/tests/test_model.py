@@ -60,14 +60,19 @@ def config_path() -> Path:
 
 
 def test_minimum_functionality():
+    # "Bad"
+    # "Good"
     pass
 
 
 def test_invariance():
+    # "I am fliong to NYC" -> N
+    # "I am fliong to Toronto" -> N
     pass
 
 
 def test_directional():
+    # "Bad" - > "GOOD"
     pass
 
 

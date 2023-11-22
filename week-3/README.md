@@ -49,12 +49,27 @@ kubectl port-forward svc/my-aim-service  8080:80 --namespace default
  
 ## Run example
 
-python lora_training/sft.py --log_with wandb --batch_size 8 --load_in_4bit --use_peft
-python lora_training/sft.py --model_name google/flan-t5-large --batch_size 8 --load_in_4bit --use_peft
+```
+python lora_training/mistral_classification.py training-llm --pretrained-ckpt mistralai/Mistral-7B-v0.1 --epochs 1 --train-sample-fraction 0.3
+python lora_training/mistral_classification.py training-llm --pretrained-ckpt facebook/opt-350m --epochs 1 --train-sample-fraction 0.3
+
+python lora_training/mistral_classification.py inference-llm
+```
+
+
 https://github.com/brevdev/notebooks/blob/main/mistral-finetune-own-data.ipynb
 
 ## Run example RLHF
 
+
+```
+docker build -t rlhf:latest .
+docker run --net=host --gpus all -it -v ${PWD}:/main rlhf:latest /bin/bash
+
+accelerate config
+python sft_llama2.py
+
+```
 
 https://github.com/huggingface/trl/tree/main/examples/research_projects/stack_llama_2/scripts
 
@@ -69,7 +84,11 @@ https://github.com/huggingface/trl/tree/main/examples/research_projects/stack_ll
 
 
 
-
+```
+pip install nemoguardrails
+pip install openai
+export OPENAI_API_KEY=**********
+```
 
 
 

@@ -3,7 +3,7 @@ import datasets
 from datasets import load_dataset
 from sklearn.model_selection import train_test_split
 
-TRAINING_CLASSIFIER_PROMPT_v2 = """### Sentence:{sentence} ### Class:{label}"""
+TRAINING_CLASSIFIER_PROMPT_v2 = """### Q:{sentence} ### Math:{label}"""
 INFERENCE_CLASSIFIER_PROMPT_v2 = """### Sentence:{sentence} ### Class:"""
 
 def clean_newsgroup_data(texts, labels):
