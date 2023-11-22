@@ -25,9 +25,7 @@ class Predictor:
 
 def run_inference_on_dataframe(df_path: Path, model_load_path: Path, result_path: Path):
     df = pd.read_csv(df_path)
-    # df_path = "/tmp/data/test.csv"
     model = Predictor(model_load_path=model_load_path)
-    # model_load_path = "/tmp/results/"
 
     correct_sentence_conf = []
     for idx in tqdm(range(len(df))):

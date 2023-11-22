@@ -63,7 +63,6 @@ def get_models(model_args, num_labels):
 
 
 def process_dataset(data_args, label_list, model, config, tokenizer, training_args, raw_datasets):
-
     padding = "max_length" if data_args.pad_to_max_length else False
     label_to_id = {v: i for i, v in enumerate(label_list)}
 
@@ -146,6 +145,7 @@ def train(config_path: Path):
 
     raw_datasets, num_labels, label_list = read_dataset(data_args=data_args, cache_dir=model_args.cache_dir)
     config, tokenizer, model = get_models(model_args=model_args, num_labels=num_labels)
+    
     train_dataset, eval_dataset = process_dataset(
         data_args=data_args,
         label_list=label_list,
@@ -164,9 +164,6 @@ def train(config_path: Path):
         eval_dataset=eval_dataset,
         tokenizer=tokenizer,
     )
-
-    # Training
-    # wandb.init(project="my-test-project")
 
     train_result = trainer.train()
     metrics = train_result.metrics

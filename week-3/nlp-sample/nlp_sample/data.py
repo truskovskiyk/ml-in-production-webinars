@@ -6,7 +6,6 @@ from sklearn.model_selection import train_test_split
 
 
 def load_cola_data(path_to_save: Path, random_state: int = 42):
-
     path_to_save.mkdir(parents=True, exist_ok=True)
 
     dataset = load_dataset("glue", "cola")

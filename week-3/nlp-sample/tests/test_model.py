@@ -31,7 +31,6 @@ def training_args() -> TrainingArguments:
 def trainer_with_one_batch(
     model_args: ModelArguments, data_args: DataTrainingArguments, training_args: TrainingArguments
 ) -> Trainer:
-
     raw_datasets, num_labels, label_list = read_dataset(data_args=data_args, cache_dir=model_args.cache_dir)
     config, tokenizer, model = get_models(model_args=model_args, num_labels=num_labels)
     train_dataset, eval_dataset = process_dataset(
@@ -61,14 +60,19 @@ def config_path() -> Path:
 
 
 def test_minimum_functionality():
+    # "Bad"
+    # "Good"
     pass
 
 
 def test_invariance():
+    # "I am fliong to NYC" -> N
+    # "I am fliong to Toronto" -> N
     pass
 
 
 def test_directional():
+    # "Bad" - > "GOOD"
     pass
 
 
@@ -82,7 +86,7 @@ def test_train_to_completion(config_path: Path):
     train(config_path=config_path)
     result_path = Path("/tmp/results")
     assert result_path.exists()
-    assert (result_path / "pytorch_model.bin").exists()
+    assert (result_path / "model.safetensors").exists()
     assert (result_path / "training_args.bin").exists()
     assert (result_path / "all_results.json").exists()
     assert (result_path / "README.md").exists()
