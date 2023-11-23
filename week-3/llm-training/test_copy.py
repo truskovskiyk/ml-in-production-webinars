@@ -79,11 +79,32 @@ trainer.train()
 trainer.save_model(output_dir)
 
 
-# instruct = dataset['instruction'][0]
-# text = f"### Question: {instruct}\n ### Answer:"
-# input_ids = tokenizer(text, return_tensors="pt", truncation=True).input_ids
 
-# outputs = model.generate(input_ids=input_ids, max_new_tokens=512, do_sample=True, top_p=0.95, temperature=1e-3,)
-# result = tokenizer.batch_decode(outputs.detach().cpu().numpy(), skip_special_tokens=True)[0]
 
-# model(tokenizer.encode(dataset['instruction'][0]))
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from datasets import load_dataset
+from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
+from peft import LoraConfig
+from transformers import AutoModelForCausalLM, BitsAndBytesConfig, HfArgumentParser, TrainingArguments
+from trl import SFTTrainer, is_xpu_available
+from accelerate import Accelerator
+import torch
+
+
+tokenizer = AutoTokenizer.from_pretrained("facebook/opt-350m")
+# model = AutoModelForCausalLM.from_pretrained("facebook/opt-350m")
+model = AutoModelForCausalLM.from_pretrained("training/checkpoint-1000/")
+dataset = load_dataset("imdb", split="train")
+example = dataset[0]
+inference(dataset[15000])
+
+
+def inference(example):
+    
+    text = f"### Review: {example['text']}\n ### Answer:"
+
+    input_ids = tokenizer(text, return_tensors="pt", truncation=True).input_ids
+
+    outputs = model.generate(input_ids=input_ids, max_new_tokens=512, do_sample=True, top_p=0.95, temperature=1e-3,)
+    result = tokenizer.batch_decode(outputs.detach().cpu().numpy(), skip_special_tokens=True)[0]
+    print(result)

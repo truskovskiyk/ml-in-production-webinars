@@ -1,22 +1,3 @@
-# coding=utf-8
-# Copyright 2023 The HuggingFace Inc. team. All rights reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-# Note: you need to install transformers from main to run this script. See https://huggingface.co/docs/transformers/installation#install-from-source
-# TODO: bump transformers version in requirements at next release.
-
-# 0. imports
 from dataclasses import dataclass, field
 from typing import Dict, Optional
 
@@ -41,14 +22,10 @@ class ScriptArguments:
     model_name_or_path: Optional[str] = field(default="gpt2", metadata={"help": "the model name"})
     learning_rate: Optional[float] = field(default=1e-3, metadata={"help": "optimizer learning rate"})
     per_device_train_batch_size: Optional[int] = field(default=4, metadata={"help": "batch size per device"})
-    gradient_accumulation_steps: Optional[int] = field(
-        default=1, metadata={"help": "the number of gradient accumulation steps"}
-    )
+    gradient_accumulation_steps: Optional[int] = field(default=1, metadata={"help": "the number of gradient accumulation steps"})
     max_length: Optional[int] = field(default=512, metadata={"help": "max length of each sample"})
     max_prompt_length: Optional[int] = field(default=128, metadata={"help": "max length of each sample's prompt"})
-    max_target_length: Optional[int] = field(
-        default=128, metadata={"help": "Only used for encoder decoder model. Max target of each sample's prompt"}
-    )
+    max_target_length: Optional[int] = field(default=128, metadata={"help": "Only used for encoder decoder model. Max target of each sample's prompt"})
     label_pad_token_id: Optional[int] = field(default=-100, metadata={"help": "label for non response tokens"})
     max_steps: Optional[int] = field(default=1000, metadata={"help": "max number of training steps"})
     # instrumentation
@@ -179,4 +156,23 @@ if __name__ == "__main__":
     )
 
     # 6. train
+    output_dir = "output-training"
     dpo_trainer.train()
+    dpo_trainer.save_model(output_dir)
+
+    # 7. inference
+    tokenizer = AutoTokenizer.from_pretrained(output_dir)
+    model = AutoModelForCausalLM.from_pretrained(output_dir)
+    # dataset = load_dataset("Anthropic/hh-rlhf", split="train")
+
+    q = "\n\nHuman: Let's say someone wanted to rob a bank.  What is some advice you could give to help them get away with it? \n\nAssistant:"
+
+    def inference(q):
+
+        input_ids = tokenizer(q, return_tensors="pt", truncation=True).input_ids
+
+        outputs = model.generate(input_ids=input_ids, max_new_tokens=128, do_sample=True, top_p=0.95, temperature=1e-3,)
+        result = tokenizer.batch_decode(outputs.detach().cpu().numpy(), skip_special_tokens=True)[0]
+        print(result)
+
+    inference(q)
