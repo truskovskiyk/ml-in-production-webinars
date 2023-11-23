@@ -7,7 +7,7 @@ on:
 
 env:
   IMAGE_MAIN_NAME: nlp-sample
-  IMAGE_MAIN_TAG: latest
+  IMAGE_MAIN_TAG: test
 
 jobs:
   test:
