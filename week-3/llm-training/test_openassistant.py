@@ -7,7 +7,8 @@ from trl import SFTTrainer, is_xpu_available
 from accelerate import Accelerator
 import torch
 
-dataset = load_dataset("lucasmccabe-lmi/CodeAlpaca-20k", split="train")
+dataset = load_dataset("timdettmers/openassistant-guanaco", split="train")
+
 
 quantization_config = BitsAndBytesConfig(load_in_8bit=False, load_in_4bit=True)
 device_map = ({"": f"xpu:{Accelerator().local_process_index}"} if is_xpu_available() else {"": Accelerator().local_process_index})
@@ -25,15 +26,10 @@ model = AutoModelForCausalLM.from_pretrained(
 
 
 
-def formatting_prompts_func(example):
-    output_texts = []
-    for i in range(len(example['instruction'])):
-        text = f"### Question: {example['instruction'][i]}\n ### Answer: {example['output'][i]}"
-        output_texts.append(text)
-    return output_texts
+instruction_template = "### Human:"
+response_template = "### Assistant:"
+collator = DataCollatorForCompletionOnlyLM(instruction_template=instruction_template, response_template=response_template, tokenizer=tokenizer, mlm=False)
 
-response_template = " ### Answer:"
-collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
 
 peft_config = LoraConfig(
     r=64,
@@ -65,7 +61,7 @@ trainer = SFTTrainer(
     model,
     args=training_args,
     train_dataset=dataset,
-    formatting_func=formatting_prompts_func,
+    dataset_text_field="text",
     data_collator=collator,
     peft_config=peft_config
 )

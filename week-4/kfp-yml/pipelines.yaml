@@ -9,6 +9,8 @@ metadata:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
+  annotations:
+    internal.kpt.dev/upstream-identifier: '|ServiceAccount|default|argo'
   labels:
     application-crd-id: kubeflow-pipelines
   name: argo
@@ -155,6 +157,8 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
+  annotations:
+    internal.kpt.dev/upstream-identifier: rbac.authorization.k8s.io|Role|default|argo-role
   labels:
     application-crd-id: kubeflow-pipelines
   name: argo-role
@@ -449,6 +453,20 @@ rules:
   - get
   - list
   - watch
+- apiGroups:
+  - pipelines.kubeflow.org
+  resources:
+  - scheduledworkflows
+  - workflows
+  verbs:
+  - report
+- apiGroups:
+  - pipelines.kubeflow.org
+  resources:
+  - runs
+  verbs:
+  - reportMetrics
+  - readArtifact
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -693,6 +711,8 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
+  annotations:
+    internal.kpt.dev/upstream-identifier: rbac.authorization.k8s.io|RoleBinding|default|argo-binding
   labels:
     application-crd-id: kubeflow-pipelines
   name: argo-binding
@@ -918,8 +938,10 @@ metadata:
 apiVersion: v1
 data:
   ConMaxLifeTime: 120s
+  DEFAULT_CACHE_STALENESS: ""
+  MAXIMUM_CACHE_STALENESS: ""
   appName: pipeline
-  appVersion: 1.8.5
+  appVersion: 2.0.3
   autoUpdatePipelineDefaultVersion: "true"
   bucketName: mlpipeline
   cacheDb: cachedb
@@ -928,8 +950,11 @@ data:
   cronScheduleTimezone: UTC
   dbHost: mysql
   dbPort: "3306"
+  dbType: mysql
   defaultPipelineRoot: ""
   mlmdDb: metadb
+  mysqlHost: mysql
+  mysqlPort: "3306"
   pipelineDb: mlpipeline
   warning: |
     1. Do not use kubectl to edit this configmap, because some values are used
@@ -975,15 +1000,10 @@ data:
   containerRuntimeExecutor: emissary
   executor: |
     imagePullPolicy: IfNotPresent
-    resources:
-      requests:
-        cpu: 0.01
-        memory: 32Mi
-      limits:
-        cpu: 0.5
-        memory: 512Mi
 kind: ConfigMap
 metadata:
+  annotations:
+    internal.kpt.dev/upstream-identifier: '|ConfigMap|default|workflow-controller-configmap'
   labels:
     application-crd-id: kubeflow-pipelines
   name: workflow-controller-configmap
@@ -1177,6 +1197,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
+    internal.kpt.dev/upstream-identifier: '|Service|default|workflow-controller-metrics'
     workflows.argoproj.io/description: |
       This service is deprecated. It will be removed in v3.4.
 
@@ -1199,6 +1220,8 @@ spec:
 apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
 metadata:
+  annotations:
+    internal.kpt.dev/upstream-identifier: scheduling.k8s.io|PriorityClass|default|workflow-controller
   labels:
     application-crd-id: kubeflow-pipelines
   name: workflow-controller
@@ -1260,7 +1283,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: gcr.io/ml-pipeline/cache-deployer:1.8.5
+        image: gcr.io/ml-pipeline/cache-deployer:2.0.3
         imagePullPolicy: Always
         name: main
       restartPolicy: Always
@@ -1295,7 +1318,18 @@ spec:
         - --db_user=$(DBCONFIG_USER)
         - --db_password=$(DBCONFIG_PASSWORD)
         - --namespace_to_watch=$(NAMESPACE_TO_WATCH)
+        - --listen_port=$(WEBHOOK_PORT)
         env:
+        - name: DEFAULT_CACHE_STALENESS
+          valueFrom:
+            configMapKeyRef:
+              key: DEFAULT_CACHE_STALENESS
+              name: pipeline-install-config
+        - name: MAXIMUM_CACHE_STALENESS
+          valueFrom:
+            configMapKeyRef:
+              key: MAXIMUM_CACHE_STALENESS
+              name: pipeline-install-config
         - name: CACHE_IMAGE
           valueFrom:
             configMapKeyRef:
@@ -1337,7 +1371,9 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: gcr.io/ml-pipeline/cache-server:1.8.5
+        - name: WEBHOOK_PORT
+          value: "8443"
+        image: gcr.io/ml-pipeline/cache-server:2.0.3
         imagePullPolicy: Always
         name: server
         ports:
@@ -1422,7 +1458,7 @@ spec:
         component: metadata-envoy
     spec:
       containers:
-      - image: gcr.io/ml-pipeline/metadata-envoy:1.8.5
+      - image: gcr.io/ml-pipeline/metadata-envoy:2.0.3
         name: container
         ports:
         - containerPort: 9090
@@ -1487,7 +1523,7 @@ spec:
             configMapKeyRef:
               key: dbPort
               name: pipeline-install-config
-        image: gcr.io/tfx-oss-public/ml_metadata_store_server:1.5.0
+        image: gcr.io/tfx-oss-public/ml_metadata_store_server:1.14.0
         livenessProbe:
           initialDelaySeconds: 3
           periodSeconds: 5
@@ -1532,7 +1568,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: gcr.io/ml-pipeline/metadata-writer:1.8.5
+        image: gcr.io/ml-pipeline/metadata-writer:2.0.3
         name: main
       serviceAccountName: kubeflow-pipelines-metadata-writer
 ---
@@ -1658,6 +1694,36 @@ spec:
             configMapKeyRef:
               key: ConMaxLifeTime
               name: pipeline-install-config
+        - name: DB_DRIVER_NAME
+          valueFrom:
+            configMapKeyRef:
+              key: dbType
+              name: pipeline-install-config
+        - name: DBCONFIG_MYSQLCONFIG_USER
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: mysql-secret
+        - name: DBCONFIG_MYSQLCONFIG_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: mysql-secret
+        - name: DBCONFIG_MYSQLCONFIG_DBNAME
+          valueFrom:
+            configMapKeyRef:
+              key: pipelineDb
+              name: pipeline-install-config
+        - name: DBCONFIG_MYSQLCONFIG_HOST
+          valueFrom:
+            configMapKeyRef:
+              key: mysqlHost
+              name: pipeline-install-config
+        - name: DBCONFIG_MYSQLCONFIG_PORT
+          valueFrom:
+            configMapKeyRef:
+              key: mysqlPort
+              name: pipeline-install-config
         - name: OBJECTSTORECONFIG_ACCESSKEY
           valueFrom:
             secretKeyRef:
@@ -1668,7 +1734,7 @@ spec:
             secretKeyRef:
               key: secretkey
               name: mlpipeline-minio-artifact
-        image: gcr.io/ml-pipeline/api-server:1.8.5
+        image: gcr.io/ml-pipeline/api-server:2.0.3
         imagePullPolicy: IfNotPresent
         livenessProbe:
           exec:
@@ -1704,6 +1770,18 @@ spec:
           requests:
             cpu: 250m
             memory: 500Mi
+        startupProbe:
+          exec:
+            command:
+            - wget
+            - -q
+            - -S
+            - -O
+            - '-'
+            - http://localhost:8888/apis/v1beta1/healthz
+          failureThreshold: 12
+          periodSeconds: 5
+          timeoutSeconds: 2
       serviceAccountName: ml-pipeline
 ---
 apiVersion: apps/v1
@@ -1737,14 +1815,25 @@ spec:
           value: "86400"
         - name: NUM_WORKERS
           value: "2"
-        image: gcr.io/ml-pipeline/persistenceagent:1.8.5
+        image: gcr.io/ml-pipeline/persistenceagent:2.0.3
         imagePullPolicy: IfNotPresent
         name: ml-pipeline-persistenceagent
         resources:
           requests:
             cpu: 120m
             memory: 500Mi
+        volumeMounts:
+        - mountPath: /var/run/secrets/kubeflow/tokens
+          name: persistenceagent-sa-token
       serviceAccountName: ml-pipeline-persistenceagent
+      volumes:
+      - name: persistenceagent-sa-token
+        projected:
+          sources:
+          - serviceAccountToken:
+              audience: pipelines.kubeflow.org
+              expirationSeconds: 3600
+              path: persistenceagent-sa-token
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -1778,7 +1867,7 @@ spec:
             configMapKeyRef:
               key: cronScheduleTimezone
               name: pipeline-install-config
-        image: gcr.io/ml-pipeline/scheduledworkflow:1.8.5
+        image: gcr.io/ml-pipeline/scheduledworkflow:2.0.3
         imagePullPolicy: IfNotPresent
         name: ml-pipeline-scheduledworkflow
       serviceAccountName: ml-pipeline-scheduledworkflow
@@ -1824,7 +1913,7 @@ spec:
               name: mlpipeline-minio-artifact
         - name: ALLOW_CUSTOM_VISUALIZATIONS
           value: "true"
-        image: gcr.io/ml-pipeline/frontend:1.8.5
+        image: gcr.io/ml-pipeline/frontend:2.0.3
         imagePullPolicy: IfNotPresent
         livenessProbe:
           exec:
@@ -1892,11 +1981,11 @@ spec:
       - env:
         - name: MAX_NUM_VIEWERS
           value: "50"
-        - name: MINIO_NAMESPACE
+        - name: NAMESPACE
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: gcr.io/ml-pipeline/viewer-crd-controller:1.8.5
+        image: gcr.io/ml-pipeline/viewer-crd-controller:2.0.3
         imagePullPolicy: Always
         name: ml-pipeline-viewer-crd
       serviceAccountName: ml-pipeline-viewer-crd-service-account
@@ -1923,7 +2012,7 @@ spec:
         application-crd-id: kubeflow-pipelines
     spec:
       containers:
-      - image: gcr.io/ml-pipeline/visualization-server:1.8.5
+      - image: gcr.io/ml-pipeline/visualization-server:2.0.3
         imagePullPolicy: IfNotPresent
         livenessProbe:
           exec:
@@ -1982,13 +2071,14 @@ spec:
     spec:
       containers:
       - args:
-        - --ignore-db-dir=lost+found
         - --datadir
         - /var/lib/mysql
+        - --default-authentication-plugin=mysql_native_password
+        - --disable-log-bin
         env:
         - name: MYSQL_ALLOW_EMPTY_PASSWORD
           value: "true"
-        image: gcr.io/ml-pipeline/mysql:5.7-debian
+        image: gcr.io/ml-pipeline/mysql:8.0.26
         name: mysql
         ports:
         - containerPort: 3306
@@ -2026,7 +2116,7 @@ spec:
         application-crd-id: kubeflow-pipelines
     spec:
       containers:
-      - image: gcr.io/ml-pipeline/inverse-proxy-agent:1.8.5
+      - image: gcr.io/ml-pipeline/inverse-proxy-agent:2.0.3
         imagePullPolicy: IfNotPresent
         name: proxy-agent
       hostNetwork: true
@@ -2035,6 +2125,8 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  annotations:
+    internal.kpt.dev/upstream-identifier: apps|Deployment|default|workflow-controller
   labels:
     application-crd-id: kubeflow-pipelines
   name: workflow-controller
@@ -2055,7 +2147,7 @@ spec:
         - --configmap
         - workflow-controller-configmap
         - --executor-image
-        - gcr.io/ml-pipeline/argoexec:v3.3.8-license-compliance
+        - gcr.io/ml-pipeline/argoexec:v3.3.10-license-compliance
         - --namespaced
         command:
         - workflow-controller
@@ -2065,7 +2157,7 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: metadata.name
-        image: gcr.io/ml-pipeline/workflow-controller:v3.3.8-license-compliance
+        image: gcr.io/ml-pipeline/workflow-controller:v3.3.10-license-compliance
         livenessProbe:
           failureThreshold: 3
           httpGet:
@@ -2137,7 +2229,7 @@ spec:
       url: https://github.com/kubeflow/pipelines
     notes: Please go to [Hosted Kubeflow Pipelines Console](https://console.cloud.google.com/ai-platform/pipelines/clusters).
     type: Kubeflow Pipelines
-    version: 1.8.5
+    version: 2.0.3
   info:
   - name: Console
     value: https://console.cloud.google.com/ai-platform/pipelines/clusters

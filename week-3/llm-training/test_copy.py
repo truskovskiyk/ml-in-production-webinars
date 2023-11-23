@@ -7,7 +7,7 @@ from trl import SFTTrainer, is_xpu_available
 from accelerate import Accelerator
 import torch
 
-dataset = load_dataset("lucasmccabe-lmi/CodeAlpaca-20k", split="train")
+dataset = load_dataset("imdb", split="train")
 
 quantization_config = BitsAndBytesConfig(load_in_8bit=False, load_in_4bit=True)
 device_map = ({"": f"xpu:{Accelerator().local_process_index}"} if is_xpu_available() else {"": Accelerator().local_process_index})
@@ -25,15 +25,19 @@ model = AutoModelForCausalLM.from_pretrained(
 
 
 
-def formatting_prompts_func(example):
-    output_texts = []
-    for i in range(len(example['instruction'])):
-        text = f"### Question: {example['instruction'][i]}\n ### Answer: {example['output'][i]}"
-        output_texts.append(text)
-    return output_texts
+# def formatting_prompts_func(example):
+#     output_texts = []
+#     for i in range(len(example['instruction'])):
+#         text = f"### Question: {example['instruction'][i]}\n ### Answer: {example['output'][i]}"
+#         output_texts.append(text)
+#     return output_texts
+
+def formatting_func(example):
+    text = f"### Review: {example['text']}\n ### Answer: {'Positive' if example['label'] == 1 else 'Negative'}"
+    return text
 
 response_template = " ### Answer:"
-collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
+# collator = DataCollatorForCompletionOnlyLM(response_template, tokenizer=tokenizer)
 
 peft_config = LoraConfig(
     r=64,
@@ -65,11 +69,21 @@ trainer = SFTTrainer(
     model,
     args=training_args,
     train_dataset=dataset,
-    formatting_func=formatting_prompts_func,
-    data_collator=collator,
+    packing=True,
+    formatting_func=formatting_func,
     peft_config=peft_config
 )
 
 trainer.train()
 
 trainer.save_model(output_dir)
+
+
+# instruct = dataset['instruction'][0]
+# text = f"### Question: {instruct}\n ### Answer:"
+# input_ids = tokenizer(text, return_tensors="pt", truncation=True).input_ids
+
+# outputs = model.generate(input_ids=input_ids, max_new_tokens=512, do_sample=True, top_p=0.95, temperature=1e-3,)
+# result = tokenizer.batch_decode(outputs.detach().cpu().numpy(), skip_special_tokens=True)[0]
+
+# model(tokenizer.encode(dataset['instruction'][0]))
