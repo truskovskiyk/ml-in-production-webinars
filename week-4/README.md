@@ -77,6 +77,12 @@ python kfp-training-pipeline.py http://0.0.0.0:8080
 ## Deploy airflow locally
 
 
+
+```
+pip install apache-airflow
+```
+
+
 1. Run standalone airflow
 
 ```
