@@ -60,16 +60,24 @@ export WANDB_API_KEY=****************
 ```
 
 
-Training 
+### Training & Inference V2
 
 ```
-python kfp-training-pipeline.py http://0.0.0.0:8080
+python kfp-training-pipeline_v2.py http://0.0.0.0:8080
 ```
 
-Inference 
+```
+kfp-inference-pipeline_v2.py http://0.0.0.0:8080
+```
+
+### Training & Inference V1
 
 ```
-python kfp-training-pipeline.py http://0.0.0.0:8080
+python kfp-training-pipeline_v1.py http://0.0.0.0:8080
+```
+
+```
+kfp-inference-pipeline_v1.py http://0.0.0.0:8080
 ```
 
 

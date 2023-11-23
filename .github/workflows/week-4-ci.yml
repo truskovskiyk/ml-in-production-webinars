@@ -7,10 +7,10 @@ on:
 
 env:
   IMAGE_MAIN_NAME: nlp-sample
-  IMAGE_MAIN_TAG: test
+  IMAGE_MAIN_TAG: latest
 
 jobs:
-  test:
+  push-image:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout 

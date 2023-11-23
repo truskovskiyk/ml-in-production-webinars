@@ -104,20 +104,20 @@ from kfp import dsl
 from kfp import compiler
 
 
-@dsl.container_component
-def say_hello(name: str, greeting: dsl.OutputPath(str)):
-    """Log a greeting and return it as an output."""
+# @dsl.container_component
+# def say_hello(name: str, greeting: dsl.OutputPath(str)):
+#     """Log a greeting and return it as an output."""
 
-    return dsl.ContainerSpec(
-        image='alpine',
-        command=[
-            'sh', '-c', '''RESPONSE="Hello, $0!"\
-                            && echo $RESPONSE\
-                            && mkdir -p $(dirname $1)\
-                            && echo $RESPONSE > $1
-                            '''
-        ],
-        args=[name, greeting])
+#     return dsl.ContainerSpec(
+#         image='alpine',
+#         command=[
+#             'sh', '-c', '''RESPONSE="Hello, $0!"\
+#                             && echo $RESPONSE\
+#                             && mkdir -p $(dirname $1)\
+#                             && echo $RESPONSE > $1
+#                             '''
+#         ],
+#         args=[name, greeting])
 
 
 # load_data = dsl.ContainerOp(
@@ -137,10 +137,11 @@ def load_data(data: dsl.OutputPath(str)):
 
 
 @dsl.pipeline
-def hello_pipeline() -> str:
-    hello_task = say_hello(name='test')
+def hello_pipeline():
+    # hello_task = say_hello(name='test')
     load_data_task = load_data()
-    return hello_task.outputs['greeting']
+    load_data_task.outputs['data']
+    # return hello_task.outputs['greeting']
 
 
 
