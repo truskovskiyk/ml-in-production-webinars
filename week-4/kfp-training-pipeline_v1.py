@@ -14,7 +14,6 @@ WANDB_API_KEY = os.getenv("WANDB_API_KEY")
 
 @dsl.pipeline(name="nlp_traininig_pipeline", description="nlp_traininig_pipeline")
 def nlp_traininig_pipeline():
-
     load_data = dsl.ContainerOp(
         name="load_data",
         command="python nlp_sample/cli.py load-cola-data /tmp/data/".split(),

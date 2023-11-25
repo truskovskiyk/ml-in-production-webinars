@@ -5,6 +5,7 @@ from torch.utils.data import Dataset, DataLoader
 import torch
 from torch.utils.data import Dataset
 
+
 class MyTrainDataset(Dataset):
     def __init__(self, size):
         self.size = size
@@ -12,10 +13,9 @@ class MyTrainDataset(Dataset):
 
     def __len__(self):
         return self.size
-    
+
     def __getitem__(self, index):
         return self.data[index]
-    
 
 
 class Trainer:
@@ -25,7 +25,7 @@ class Trainer:
         train_data: DataLoader,
         optimizer: torch.optim.Optimizer,
         gpu_id: int,
-        save_every: int, 
+        save_every: int,
     ) -> None:
         self.gpu_id = gpu_id
         self.model = model.to(gpu_id)
@@ -69,12 +69,7 @@ def load_train_objs():
 
 
 def prepare_dataloader(dataset: Dataset, batch_size: int):
-    return DataLoader(
-        dataset,
-        batch_size=batch_size,
-        pin_memory=True,
-        shuffle=True
-    )
+    return DataLoader(dataset, batch_size=batch_size, pin_memory=True, shuffle=True)
 
 
 def main(device, total_epochs, save_every, batch_size):
@@ -86,12 +81,13 @@ def main(device, total_epochs, save_every, batch_size):
 
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description='simple distributed training job')
-    parser.add_argument('total_epochs', type=int, help='Total epochs to train the model')
-    parser.add_argument('save_every', type=int, help='How often to save a snapshot')
-    parser.add_argument('--batch_size', default=32, type=int, help='Input batch size on each device (default: 32)')
+
+    parser = argparse.ArgumentParser(description="simple distributed training job")
+    parser.add_argument("total_epochs", type=int, help="Total epochs to train the model")
+    parser.add_argument("save_every", type=int, help="How often to save a snapshot")
+    parser.add_argument("--batch_size", default=32, type=int, help="Input batch size on each device (default: 32)")
     args = parser.parse_args()
-    
+
     device = 0  # shorthand for cuda:0
     main(device, args.total_epochs, args.save_every, args.batch_size)
 

@@ -12,6 +12,7 @@ import os
 import torch
 from torch.utils.data import Dataset
 
+
 class MyTrainDataset(Dataset):
     def __init__(self, size):
         self.size = size
@@ -19,13 +20,15 @@ class MyTrainDataset(Dataset):
 
     def __len__(self):
         return self.size
-    
+
     def __getitem__(self, index):
         return self.data[index]
-    
+
+
 def ddp_setup():
     init_process_group(backend="nccl")
     # init_process_group(backend="golo")
+
 
 class Trainer:
     def __init__(
@@ -97,11 +100,7 @@ def load_train_objs():
 
 def prepare_dataloader(dataset: Dataset, batch_size: int):
     return DataLoader(
-        dataset,
-        batch_size=batch_size,
-        pin_memory=True,
-        shuffle=False,
-        sampler=DistributedSampler(dataset)
+        dataset, batch_size=batch_size, pin_memory=True, shuffle=False, sampler=DistributedSampler(dataset)
     )
 
 
@@ -116,10 +115,11 @@ def main(save_every: int, total_epochs: int, batch_size: int, snapshot_path: str
 
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description='simple distributed training job')
-    parser.add_argument('total_epochs', type=int, help='Total epochs to train the model')
-    parser.add_argument('save_every', type=int, help='How often to save a snapshot')
-    parser.add_argument('--batch_size', default=32, type=int, help='Input batch size on each device (default: 32)')
+
+    parser = argparse.ArgumentParser(description="simple distributed training job")
+    parser.add_argument("total_epochs", type=int, help="Total epochs to train the model")
+    parser.add_argument("save_every", type=int, help="How often to save a snapshot")
+    parser.add_argument("--batch_size", default=32, type=int, help="Input batch size on each device (default: 32)")
     args = parser.parse_args()
-    
+
     main(args.save_every, args.total_epochs, args.batch_size)

@@ -1,153 +1,148 @@
 import os
 import uuid
 from typing import Optional
-
+from kfp.client import Client
 import kfp
 import typer
 from kfp import dsl
 from kubernetes.client.models import V1EnvVar
+from kfp import dsl
+from kfp import compiler
+from kfp.dsl import Input, Output, Dataset, Model, Artifact
+from typing import NamedTuple
+
 
 IMAGE = "kyrylprojector/nlp-sample:latest"
 WANDB_PROJECT = os.getenv("WANDB_PROJECT")
 WANDB_API_KEY = os.getenv("WANDB_API_KEY")
 
 
-# @dsl.pipeline(name="nlp_traininig_pipeline", description="nlp_traininig_pipeline")
-# def nlp_traininig_pipeline():
+@dsl.component(base_image=IMAGE)
+def load_data(train_data: Output[Dataset], val_data: Output[Dataset], test_data: Output[Dataset]):
+    from nlp_sample.data import load_cola_data
+    from pathlib import Path
+    import shutil
 
-#     load_data = dsl.ContainerOp(
-#         name="load_data",
-#         command="python nlp_sample/cli.py load-cola-data /tmp/data/".split(),
-#         image=IMAGE,
-#         file_outputs={"train": "/tmp/data/train.csv", "val": "/tmp/data/val.csv", "test": "/tmp/data/test.csv"},
-#     )
-#     load_data.execution_options.caching_strategy.max_cache_staleness = "P0D"
+    load_cola_data(Path("/app/data"))
 
-#     train_model = dsl.ContainerOp(
-#         name="train_model ",
-#         command="python nlp_sample/cli.py train tests/data/test_config.json".split(),
-#         image=IMAGE,
-#         artifact_argument_paths=[
-#             dsl.InputArgumentPath(load_data.outputs["train"], path="/tmp/data/train.csv"),
-#             dsl.InputArgumentPath(load_data.outputs["val"], path="/tmp/data/val.csv"),
-#             dsl.InputArgumentPath(load_data.outputs["test"], path="/tmp/data/test.csv"),
-#         ],
-#         file_outputs={
-#             "config": "/tmp/results/config.json",
-#             "model": "/tmp/results/pytorch_model.bin",
-#             "tokenizer": "/tmp/results/tokenizer.json",
-#             "tokenizer_config": "/tmp/results/tokenizer_config.json",
-#             "special_tokens_map": "/tmp/results/special_tokens_map.json",
-#             "model_card": "/tmp/results/README.md",
-#         },
-#     )
-
-#     upload_model = dsl.ContainerOp(
-#         name="upload_model ",
-#         command="python nlp_sample/cli.py upload-to-registry kfp-pipeline /tmp/results".split(),
-#         image=IMAGE,
-#         artifact_argument_paths=[
-#             dsl.InputArgumentPath(train_model.outputs["config"], path="/tmp/results/config.json"),
-#             dsl.InputArgumentPath(train_model.outputs["model"], path="/tmp/results/pytorch_model.bin"),
-#             dsl.InputArgumentPath(train_model.outputs["tokenizer"], path="/tmp/results/tokenizer.json"),
-#             dsl.InputArgumentPath(train_model.outputs["tokenizer_config"], path="/tmp/results/tokenizer_config.json"),
-#             dsl.InputArgumentPath(
-#                 train_model.outputs["special_tokens_map"], path="/tmp/results/special_tokens_map.json"
-#             ),
-#             dsl.InputArgumentPath(train_model.outputs["model_card"], path="/tmp/results/README.md"),
-#         ],
-#     )
-
-#     env_var_project = V1EnvVar(name="WANDB_PROJECT", value=WANDB_PROJECT)
-#     upload_model = upload_model.add_env_variable(env_var_project)
-
-#     # TODO: should be a secret, but out of scope for this webinar
-#     env_var_password = V1EnvVar(name="WANDB_API_KEY", value=WANDB_API_KEY)
-#     upload_model = upload_model.add_env_variable(env_var_password)
+    shutil.move(Path("/app/data") / "train.csv", train_data.path)
+    shutil.move(Path("/app/data") / "val.csv", val_data.path)
+    shutil.move(Path("/app/data") / "test.csv", test_data.path)
 
 
-# def compile_pipeline() -> str:
-#     path = "/tmp/nlp_traininig_pipeline.yaml"
-#     kfp.compiler.Compiler().compile(nlp_traininig_pipeline, path)
-#     return path
+@dsl.component(base_image=IMAGE)
+def train_model(
+    config: Output[Artifact],
+    model: Output[Model],
+    tokenizer: Output[Artifact],
+    tokenizer_config: Output[Artifact],
+    model_card: Output[Artifact],
+    special_tokens_map: Output[Artifact],
+    train_data: Input[Dataset],
+    val_data: Input[Dataset],
+    test_data: Input[Dataset],
+):
+    from nlp_sample.train import train
+    from pathlib import Path
+    import shutil
+
+    Path("/tmp/data").mkdir(exist_ok=True)
+    shutil.copy(train_data.path, Path("/tmp/data") / "train.csv")
+    shutil.copy(val_data.path, Path("/tmp/data") / "val.csv")
+    shutil.copy(test_data.path, Path("/tmp/data") / "test.csv")
+
+    train(config_path=Path("tests/data/test_config.json"))
+
+    shutil.move("/tmp/results/config.json", config.path)
+    shutil.move("/tmp/results/model.safetensors", model.path)
+    shutil.move("/tmp/results/tokenizer.json", tokenizer.path)
+    shutil.move("/tmp/results/tokenizer_config.json", tokenizer_config.path)
+    shutil.move("/tmp/results/special_tokens_map.json", model_card.path)
+    shutil.move("/tmp/results/README.md", special_tokens_map.path)
 
 
-# def create_pipeline(client: kfp.Client, namespace: str):
-#     print("Creating experiment")
-#     _ = client.create_experiment("training", namespace=namespace)
+@dsl.component(base_image=IMAGE)
+def upload_model(
+    config: Input[Artifact],
+    model: Input[Model],
+    tokenizer: Input[Artifact],
+    tokenizer_config: Input[Artifact],
+    model_card: Input[Artifact],
+    special_tokens_map: Input[Artifact],
+):
+    from nlp_sample.utils import upload_to_registry
+    from pathlib import Path
+    import shutil
 
-#     print("Uploading pipeline")
-#     name = "nlp-sample-training"
-#     if client.get_pipeline_id(name) is not None:
-#         print("Pipeline exists - upload new version.")
-#         pipeline_prev_version = client.get_pipeline(client.get_pipeline_id(name))
-#         version_name = f"{name}-{uuid.uuid4()}"
-#         pipeline = client.upload_pipeline_version(
-#             pipeline_package_path=compile_pipeline(),
-#             pipeline_version_name=version_name,
-#             pipeline_id=pipeline_prev_version.id,
-#         )
-#     else:
-#         pipeline = client.upload_pipeline(pipeline_package_path=compile_pipeline(), pipeline_name=name)
-#     print(f"pipeline {pipeline.id}")
+    model_path = Path("/tmp/model")
+    model_path.mkdir(exist_ok=True)
+    shutil.copy(config.path, model_path / "config.json")
+    shutil.copy(model.path, model_path / "model.safetensors")
+    shutil.copy(tokenizer.path, model_path / "tokenizer.json")
+    shutil.copy(tokenizer_config.path, model_path / "tokenizer_config.json")
+    shutil.copy(special_tokens_map.path, model_path / "special_tokens_map.json")
+    shutil.copy(model_card.path, model_path / "README.md")
 
-
-# def auto_create_pipelines(
-#     host: str,
-#     namespace: Optional[str] = None,
-# ):
-#     client = kfp.Client(host=host)
-#     create_pipeline(client=client, namespace=namespace)
-
-
-from kfp import dsl
-from kfp import compiler
-
-
-# @dsl.container_component
-# def say_hello(name: str, greeting: dsl.OutputPath(str)):
-#     """Log a greeting and return it as an output."""
-
-#     return dsl.ContainerSpec(
-#         image='alpine',
-#         command=[
-#             'sh', '-c', '''RESPONSE="Hello, $0!"\
-#                             && echo $RESPONSE\
-#                             && mkdir -p $(dirname $1)\
-#                             && echo $RESPONSE > $1
-#                             '''
-#         ],
-#         args=[name, greeting])
-
-
-# load_data = dsl.ContainerOp(
-#     name="load_data",
-#     command="python nlp_sample/cli.py load-cola-data /tmp/data/".split(),
-#     image=IMAGE,
-#     file_outputs={"train": "/tmp/data/train.csv", "val": "/tmp/data/val.csv", "test": "/tmp/data/test.csv"},
-# )
-
-@dsl.container_component
-def load_data(data: dsl.OutputPath(str)):
-    # python nlp_sample/cli.py  load-cola-data-file-input  t1.csv t2.csv t3.csv
-    return dsl.ContainerSpec(
-        image=IMAGE,
-        command=['sh', '-c', "python nlp_sample/cli.py load-cola-data-file-input $0 t2.csv t3.csv"],
-        args=[data])
+    upload_to_registry(model_name="kfp-pipeline", model_path=model_path)
 
 
 @dsl.pipeline
-def hello_pipeline():
-    # hello_task = say_hello(name='test')
+def training_pipeline():
     load_data_task = load_data()
-    load_data_task.outputs['data']
-    # return hello_task.outputs['greeting']
 
+    train_model_task = train_model(
+        train_data=load_data_task.outputs["train_data"],
+        val_data=load_data_task.outputs["val_data"],
+        test_data=load_data_task.outputs["test_data"],
+    )
+    train_model_task = train_model_task.set_env_variable(name="WANDB_PROJECT", value=WANDB_PROJECT)
+    train_model_task = train_model_task.set_env_variable(name="WANDB_API_KEY", value=WANDB_API_KEY)
+
+    upload_model_task = upload_model(
+        config=train_model_task.outputs["config"],
+        model=train_model_task.outputs["model"],
+        tokenizer=train_model_task.outputs["tokenizer"],
+        tokenizer_config=train_model_task.outputs["tokenizer_config"],
+        model_card=train_model_task.outputs["model_card"],
+        special_tokens_map=train_model_task.outputs["special_tokens_map"],
+    )
+    upload_model_task = upload_model_task.set_env_variable(name="WANDB_PROJECT", value=WANDB_PROJECT)
+    upload_model_task = upload_model_task.set_env_variable(name="WANDB_API_KEY", value=WANDB_API_KEY)
+
+
+def compile_pipeline() -> str:
+    path = "/tmp/nlp_traininig_pipeline.yaml"
+    kfp.compiler.Compiler().compile(training_pipeline, path)
+    return path
+
+
+def create_pipeline(client: kfp.Client, namespace: str):
+    print("Creating experiment")
+    _ = client.create_experiment("training", namespace=namespace)
+
+    print("Uploading pipeline")
+    name = "nlp-sample-training"
+    if client.get_pipeline_id(name) is not None:
+        print("Pipeline exists - upload new version.")
+        pipeline_prev_version = client.get_pipeline(client.get_pipeline_id(name))
+        version_name = f"{name}-{uuid.uuid4()}"
+        pipeline = client.upload_pipeline_version(
+            pipeline_package_path=compile_pipeline(),
+            pipeline_version_name=version_name,
+            pipeline_id=pipeline_prev_version.pipeline_id,
+        )
+    else:
+        pipeline = client.upload_pipeline(pipeline_package_path=compile_pipeline(), pipeline_name=name)
+    print(f"pipeline {pipeline.pipeline_id}")
+
+
+def auto_create_pipelines(
+    host: str,
+    namespace: Optional[str] = None,
+):
+    client = kfp.Client(host=host)
+    create_pipeline(client=client, namespace=namespace)
 
 
 if __name__ == "__main__":
-    from kfp.client import Client
-
-    host = 'http://54.227.181.233:3000'
-    client = Client(host=host)
-    client.create_run_from_pipeline_func(hello_pipeline, arguments={})
+    typer.run(auto_create_pipelines)
