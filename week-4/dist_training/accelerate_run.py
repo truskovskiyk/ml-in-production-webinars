@@ -15,10 +15,9 @@ class MyTrainDataset(Dataset):
 
     def __len__(self):
         return self.size
-    
+
     def __getitem__(self, index):
         return self.data[index]
-    
 
 
 def load_train_objs():
@@ -27,10 +26,12 @@ def load_train_objs():
     optimizer = torch.optim.SGD(model.parameters(), lr=1e-3)
     return train_set, model, optimizer
 
+
 def collate_fn(examples):
     pixel_values = torch.stack([example[0] for example in examples])
     labels = torch.tensor([example[1] for example in examples])
-    return {"x":pixel_values, "labels":labels}
+    return {"x": pixel_values, "labels": labels}
+
 
 class MyTrainer(Trainer):
     def compute_loss(self, model, inputs, return_outputs=False):
@@ -38,17 +39,14 @@ class MyTrainer(Trainer):
         target = inputs["labels"]
         loss = F.cross_entropy(outputs, target)
         return (loss, outputs) if return_outputs else loss
-    
+
+
 def train():
     train_set, model, optimizer = load_train_objs()
 
     training_args = TrainingArguments(
-        "basic-trainer",
-        per_device_train_batch_size=64,
-        num_train_epochs=1000,
-        remove_unused_columns=False
+        "basic-trainer", per_device_train_batch_size=64, num_train_epochs=1000, remove_unused_columns=False
     )
-
 
     trainer = MyTrainer(
         model,
@@ -59,7 +57,8 @@ def train():
 
     trainer.train()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     train()
 
 # accelerate launch accelerate.py

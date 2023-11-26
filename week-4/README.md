@@ -13,6 +13,50 @@ Run k9s
 k9s -A
 ```
 
+# Airflow
+
+## Deploy airflow locally
+
+
+
+```
+export AIRFLOW_HOME=$PWD/airflow-home
+```
+
+```
+AIRFLOW_VERSION=2.7.3
+PYTHON_VERSION="$(python --version | cut -d " " -f 2 | cut -d "." -f 1-2)"
+CONSTRAINT_URL="https://raw.githubusercontent.com/apache/airflow/constraints-${AIRFLOW_VERSION}/constraints-${PYTHON_VERSION}.txt"
+pip install "apache-airflow==${AIRFLOW_VERSION}" --constraint "${CONSTRAINT_URL}"
+pip install apache-airflow-providers-cncf-kubernetes==7.9.0
+```
+
+
+1. Run standalone airflow
+
+```
+export AIRFLOW__CORE__LOAD_EXAMPLES=False
+airflow standalone
+```
+
+2. Create storage 
+
+```
+kubectl create -f airflow-volumes.yaml
+```
+
+3. Read to run pipelines
+
+- https://madewithml.com/courses/mlops/orchestration/
+
+
+### References:
+
+- https://airflow.apache.org/docs/apache-airflow-providers-cncf-kubernetes/stable/operators.html
+- https://www.astronomer.io/guides/kubepod-operator/
+- https://www.astronomer.io/guides/airflow-passing-data-between-tasks/
+
+
 # Kubeflow pipelines 
 
 ## Deploy kubeflow pipelines 
@@ -20,7 +64,7 @@ k9s -A
 Create directly
 
 ```
-export PIPELINE_VERSION=1.8.5
+export PIPELINE_VERSION=2.0.3
 kubectl apply -k "github.com/kubeflow/pipelines/manifests/kustomize/cluster-scoped-resources?ref=$PIPELINE_VERSION"
 kubectl wait --for condition=established --timeout=60s crd/applications.app.k8s.io
 kubectl apply -k "github.com/kubeflow/pipelines/manifests/kustomize/env/dev?ref=$PIPELINE_VERSION"
@@ -29,15 +73,15 @@ kubectl apply -k "github.com/kubeflow/pipelines/manifests/kustomize/env/dev?ref=
 Create yaml and applay with kubectl (better option)
 
 ```
-export PIPELINE_VERSION=1.8.5
+export PIPELINE_VERSION=2.0.3
 kubectl kustomize "github.com/kubeflow/pipelines/manifests/kustomize/cluster-scoped-resources?ref=$PIPELINE_VERSION" > kfp-yml/res.yaml
-kubectl create -f kfp-yml/res.yaml
-
-kubectl wait --for condition=established --timeout=60s crd/applications.app.k8s.io
-
 kubectl kustomize "github.com/kubeflow/pipelines/manifests/kustomize/env/dev?ref=$PIPELINE_VERSION" > kfp-yml/pipelines.yaml
+
+kubectl create -f kfp-yml/res.yaml
+kubectl wait --for condition=established --timeout=60s crd/applications.app.k8s.io
 kubectl create -f kfp-yml/pipelines.yaml
 ```
+
 
 Access UI and minio
 
@@ -53,50 +97,42 @@ kubectl port-forward --address=0.0.0.0 svc/ml-pipeline-ui 8888:80 -n kubeflow
 Setup env variables 
 
 ```
-export WANDB_PROJECT=nlp-sample
+export WANDB_PROJECT=****************
 export WANDB_API_KEY=****************
 ```
 
 
-Training 
+### Training & Inference V2 (2.0.3)
 
 ```
-python kfp-training-pipeline.py http://0.0.0.0:8080
+python kfp-training-pipeline_v2.py http://0.0.0.0:8080
 ```
 
-Inference 
-
 ```
-python kfp-training-pipeline.py http://0.0.0.0:8080
+python kfp-inference-pipeline_v2.py http://0.0.0.0:8080
 ```
 
 
-# Airflow
-## Deploy airflow locally
+### Training & Inference V1 (1.8.9)
 
-
-1. Run standalone airflow
 
 ```
-export AIRFLOW_HOME=$PWD/airflow-home
-airflow standalone
+python kfp-training-pipeline_v1.py http://0.0.0.0:8080
 ```
 
-2. Configure airlfow <> k8s connection
-3. Create storage 
-
 ```
-kubectl create -f airflow-volumes.yaml
+python kfp-inference-pipeline_v1.py http://0.0.0.0:8080
 ```
 
-4. Read to run pipelines
+### References
 
-- https://madewithml.com/courses/mlops/orchestration/
+- https://www.kubeflow.org/docs/components/pipelines/v2/data-types/artifacts/#new-pythonic-artifact-syntax
 
 
-References:
 
-- https://www.astronomer.io/guides/kubepod-operator/
-- https://www.astronomer.io/guides/airflow-passing-data-between-tasks/
+# Dagster
 
+
+- https://github.com/dagster-io/dagster_llm_finetune
+- https://dagster.io/blog/finetuning-llms
 
