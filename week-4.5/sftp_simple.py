@@ -283,11 +283,15 @@ peft_model_id = f"{results_dir}/assets"
 trainer.model.save_pretrained(peft_model_id)
 tokenizer.save_pretrained(peft_model_id)
 
-with open(f"{results_dir}/results.pkl", "wb") as handle:
-    run_result = [
-        epochs,
-        rank,
-        dropout,
-        train_loss,
-    ]
-    pickle.dump(run_result, handle)
+
+ifer_model = trainer.model.eval()
+infer_one_example(ifer_model, tokenizer, test_dataset['instructions'][5])
+
+# with open(f"{results_dir}/results.pkl", "wb") as handle:
+#     run_result = [
+#         epochs,
+#         rank,
+#         dropout,
+#         train_loss,
+#     ]
+#     pickle.dump(run_result, handle)
