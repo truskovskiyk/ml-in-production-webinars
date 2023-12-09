@@ -150,6 +150,7 @@ test_dataset['instructions'][0]
 
 # Load model and tokenizer
 pretrained_ckpt = "NousResearch/Llama-2-7b-hf"
+pretrained_ckpt = "finetuned_model/assets/"
 # pretrained_ckpt = "mistralai/Mistral-7B-v0.1"
 
 # BitsAndBytesConfig quantization config

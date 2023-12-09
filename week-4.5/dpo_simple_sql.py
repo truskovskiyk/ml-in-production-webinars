@@ -1,33 +1,3 @@
-dpo_dataset_dict = {
-    "prompt": [
-        "hello",
-        "how are you",
-        "What is your name?",
-        "What is your name?",
-        "Which is the best programming language?",
-        "Which is the best programming language?",
-        "Which is the best programming language?",
-    ],
-    "chosen": [
-        "hi nice to meet you",
-        "I am fine",
-        "My name is Mary",
-        "My name is Mary",
-        "Python",
-        "Python",
-        "Java",
-    ],
-    "rejected": [
-        "leave me alone",
-        "I am not fine",
-        "Whats it to you?",
-        "I dont have a name",
-        "Javascript",
-        "C++",
-        "C++",
-    ],
-}
-
 # 0. imports
 import os
 from dataclasses import dataclass, field
@@ -44,8 +14,15 @@ from trl import DPOTrainer
 # Define and parse arguments.
 @dataclass
 class ScriptArguments:
+    """
+    The arguments for the DPO training script.
+    """
+
+    # data parameters
     beta: Optional[float] = field(default=0.1, metadata={"help": "the beta parameter for DPO loss"})
-    model_name_or_path: Optional[str] = field(default="../sft/results/final_checkpoint", metadata={"help": "the location of the SFT model name or path"})
+
+    # training parameters
+    model_name_or_path: Optional[str] = field(default="finetuned_model_sft_sql/checkpoint-800", metadata={"help": "the location of the SFT model name or path"},)
     learning_rate: Optional[float] = field(default=5e-4, metadata={"help": "optimizer learning rate"})
     lr_scheduler_type: Optional[str] = field(default="cosine", metadata={"help": "the lr scheduler type"})
     warmup_steps: Optional[int] = field(default=100, metadata={"help": "the number of warmup steps"})
@@ -54,8 +31,12 @@ class ScriptArguments:
 
     per_device_train_batch_size: Optional[int] = field(default=4, metadata={"help": "train batch size per device"})
     per_device_eval_batch_size: Optional[int] = field(default=1, metadata={"help": "eval batch size per device"})
-    gradient_accumulation_steps: Optional[int] = field(default=4, metadata={"help": "the number of gradient accumulation steps"})
-    gradient_checkpointing: Optional[bool] = field(default=True, metadata={"help": "whether to use gradient checkpointing"})
+    gradient_accumulation_steps: Optional[int] = field(
+        default=4, metadata={"help": "the number of gradient accumulation steps"}
+    )
+    gradient_checkpointing: Optional[bool] = field(
+        default=True, metadata={"help": "whether to use gradient checkpointing"}
+    )
 
     lora_alpha: Optional[float] = field(default=16, metadata={"help": "the lora alpha parameter"})
     lora_dropout: Optional[float] = field(default=0.05, metadata={"help": "the lora dropout parameter"})
@@ -71,14 +52,46 @@ class ScriptArguments:
     output_dir: Optional[str] = field(default="./results", metadata={"help": "the output directory"})
     log_freq: Optional[int] = field(default=1, metadata={"help": "the logging frequency"})
 
+INFERENCE_SUMMARIZATION_PROMPT_v2 = """### Context:{context} ### Auestion:{question} ### Answer:"""
 
-TRAINING_SUMMARIZATION_PROMPT_v2 = """### Context:{context} ### Auestion:{question} ### Answer:{answer}"""
-
-def get_stack_exchange_paired():
+def get_sql_data_paired():
 
     dataset = load_dataset("b-mc2/sql-create-context")
     train_dataset = dataset["train"]
-    
+    original_columns = train_dataset.column_names
+
+    def return_prompt_and_responses(samples):
+        return {
+            "prompt": [INFERENCE_SUMMARIZATION_PROMPT_v2.format(context=context, question=question) for context, question in zip(samples["context"], samples['question'])],
+            "chosen": [x for x in samples["answer"]],
+            # "rejected": samples["answer_rejected"],
+            "rejected": ["Random stuff" for x in samples["answer"]],
+        }
+
+    return dataset.map(
+        return_prompt_and_responses,
+        batched=True,
+        remove_columns=original_columns,
+    )    
+
+def get_stack_exchange_paired(
+    data_dir: str = "data/rl",
+    sanity_check: bool = True,
+    cache_dir: str = None,
+    num_proc=24,
+) -> Dataset:
+    """Load the stack-exchange-paired dataset from Hugging Face and convert it to the necessary format.
+
+    The dataset is converted to a dictionary with the following structure:
+    {
+        'prompt': List[str],
+        'chosen': List[str],
+        'rejected': List[str],
+    }
+
+    Prompts are structured as follows:
+      "Question: " + <prompt> + "\n\nAnswer: "
+    """
     dataset = load_dataset(
         "lvwerra/stack-exchange-paired",
         split="train",
@@ -106,8 +119,7 @@ def get_stack_exchange_paired():
 
 
 if __name__ == "__main__":
-    parser = HfArgumentParser(ScriptArguments)
-    script_args = parser.parse_args_into_dataclasses()[0]
+    script_args = ScriptArguments()
 
     # 1. load a pretrained model
     model = AutoModelForCausalLM.from_pretrained(
@@ -118,31 +130,18 @@ if __name__ == "__main__":
     )
     model.config.use_cache = False
 
-    if script_args.ignore_bias_buffers:
-        # torch distributed hack
-        model._ddp_params_and_buffers_to_ignore = [
-            name for name, buffer in model.named_buffers() if buffer.dtype == torch.bool
-        ]
-
     model_ref = AutoModelForCausalLM.from_pretrained(
         script_args.model_name_or_path,
         low_cpu_mem_usage=True,
         torch_dtype=torch.float16,
         load_in_4bit=True,
     )
-    tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-hf")
+    tokenizer = AutoTokenizer.from_pretrained(script_args.model_name_or_path)
     tokenizer.pad_token = tokenizer.eos_token
 
     # 2. Load the Stack-exchange paired dataset
-    train_dataset = get_stack_exchange_paired(data_dir="data/rl", sanity_check=script_args.sanity_check)
+    train_dataset = get_stack_exchange_paired(data_dir="data/rl")
     train_dataset = train_dataset.filter(
-        lambda x: len(x["prompt"]) + len(x["chosen"]) <= script_args.max_length
-        and len(x["prompt"]) + len(x["rejected"]) <= script_args.max_length
-    )
-
-    # 3. Load evaluation dataset
-    eval_dataset = get_stack_exchange_paired(data_dir="data/evaluation", sanity_check=True)
-    eval_dataset = eval_dataset.filter(
         lambda x: len(x["prompt"]) + len(x["chosen"]) <= script_args.max_length
         and len(x["prompt"]) + len(x["rejected"]) <= script_args.max_length
     )
@@ -160,7 +159,7 @@ if __name__ == "__main__":
         evaluation_strategy="steps",
         eval_steps=script_args.eval_steps,
         output_dir=script_args.output_dir,
-        report_to=script_args.report_to,
+        report_to="none",
         lr_scheduler_type=script_args.lr_scheduler_type,
         warmup_steps=script_args.warmup_steps,
         optim=script_args.optimizer_type,
@@ -193,7 +192,7 @@ if __name__ == "__main__":
         args=training_args,
         beta=script_args.beta,
         train_dataset=train_dataset,
-        eval_dataset=eval_dataset,
+        # eval_dataset=eval_dataset,
         tokenizer=tokenizer,
         peft_config=peft_config,
         max_prompt_length=script_args.max_prompt_length,
@@ -207,3 +206,4 @@ if __name__ == "__main__":
     # 7. save
     output_dir = os.path.join(script_args.output_dir, "final_checkpoint")
     dpo_trainer.model.save_pretrained(output_dir)
+

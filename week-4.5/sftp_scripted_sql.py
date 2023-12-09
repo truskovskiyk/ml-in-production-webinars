@@ -91,6 +91,7 @@ def main():
     print(train_dataset['instructions'][0])
 
     pretrained_ckpt = "NousResearch/Llama-2-7b-hf"
+    pretrained_ckpt = "finetuned_model_sql/assets/"
 
     # BitsAndBytesConfig int-4 config
     bnb_config = BitsAndBytesConfig(
@@ -124,18 +125,18 @@ def main():
 
 
     # LoRA config based on QLoRA paper
-    peft_config = LoraConfig(
-        lora_alpha=alpha,
-        lora_dropout=dropout,
-        r=rank,
-        bias="none",
-        task_type="CAUSAL_LM"
-    )
+    # peft_config = LoraConfig(
+    #     lora_alpha=alpha,
+    #     lora_dropout=dropout,
+    #     r=rank,
+    #     bias="none",
+    #     task_type="CAUSAL_LM"
+    # )
 
 
-    # prepare model for training
-    model = prepare_model_for_kbit_training(model)
-    model = get_peft_model(model, peft_config)
+    # # prepare model for training
+    # model = prepare_model_for_kbit_training(model)
+    # model = get_peft_model(model, peft_config)
 
 
     # inject data into the prompt
@@ -148,7 +149,7 @@ def main():
 
 
 
-    results_dir = "finetuned_model_sql"
+    results_dir = "finetuned_model_sql_test"
 
     training_args = TrainingArguments(
         output_dir=results_dir,
