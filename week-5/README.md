@@ -4,7 +4,7 @@
 Create kind cluster 
 
 ```
-kind create cluster --name ml-in-production-course-week-5 --image=kindest/node:v1.21.2 --config=k8s/kind.yaml
+kind create cluster --name ml-in-production-course-week-5
 ```
 
 Run k9s 
@@ -18,7 +18,7 @@ k9s -A
 
 
 ```
-export WANDB_API_KEY=******************
+export WANDB_API_KEY=cb86168a2e8db7edb905da69307450f5e7867d66
 ```
 
 
@@ -69,8 +69,101 @@ http POST http://0.0.0.0:8080/predict < samples.json
 pytest -ss ./tests
 ```
 
+# Triton 
 
-# Seldon 
+
+```
+docker run -v $PWD:/dev_data --shm-size=1g --ulimit memlock=-1 --net=host --ulimit stack=67108864 -ti nvcr.io/nvidia/tritonserver:23.11-vllm-python-py3 /bin/bash
+
+pip install -r /dev_data/requirements.txt
+export WANDB_API_KEY=cb86168a2e8db7edb905da69307450f5e7867d66
+
+tritonserver --http-port 5000 --model-repository /dev_data/triton-python-example/
+
+```
+
+
+- https://github.com/NVIDIA/DeepLearningExamples/blob/master/PyTorch/LanguageModeling/BERT/triton/README.md
+- https://github.com/triton-inference-server/fastertransformer_backend
+- https://github.com/triton-inference-server/fastertransformer_backend
+
+# LLMs
+
+
+- https://github.com/vllm-project/vllm
+- https://github.com/huggingface/text-generation-inference
+- https://github.com/predibase/lorax
+- https://github.com/triton-inference-server/vllm_backend
+- https://github.com/ray-project/ray-llm
+
+
+# KServe 
+
+Install 
+
+```
+curl -s "https://raw.githubusercontent.com/kserve/kserve/release-0.11/hack/quick_install.sh" | bash
+```
+
+Deploy iris
+
+```
+kubectl create -f k8s/kserve-iris.yaml
+kubectl get inferenceservices sklearn-iris
+```
+
+Port forward iris
+
+```
+kubectl get svc --namespace istio-system
+kubectl port-forward --namespace istio-system svc/istio-ingressgateway 8080:80
+```
+
+Call API
+
+```
+kubectl get inferenceservice sklearn-iris
+SERVICE_HOSTNAME=$(kubectl get inferenceservice sklearn-iris -o jsonpath='{.status.url}' | cut -d "/" -f 3)
+
+export SERVICE_HOSTNAME=sklearn-iris.default.example.com
+export INGRESS_HOST=localhost
+export INGRESS_PORT=8080
+
+curl -v -H "Host: ${SERVICE_HOSTNAME}" -H "Content-Type: application/json" "http://${INGRESS_HOST}:${INGRESS_PORT}/v1/models/sklearn-iris:predict" -d @./iris-input.json
+```
+
+Load test 
+
+
+```
+kubectl create -f https://raw.githubusercontent.com/kserve/kserve/release-0.11/docs/samples/v1beta1/sklearn/v1/perf.yaml
+```
+
+
+
+Custom model 
+
+- https://kserve.github.io/website/latest/modelserving/v1beta1/custom/custom_model/#build-custom-serving-image-with-buildpacks
+
+```
+docker build -f Dockerfile -t kyrylprojector/custom-model:latest --target app-kserve .
+docker push kyrylprojector/custom-model:latest
+
+docker run -e PORT=8080 -p 5000:8080 kyrylprojector/custom-model:latest
+curl localhost:5000/v1/models/custom-model:predict -d @./kserve-input.json
+
+
+kubectl create -f k8s/kserve-custom.yaml
+kubectl get inferenceservice custom-model
+SERVICE_HOSTNAME=$(kubectl get inferenceservice custom-model -o jsonpath='{.status.url}' | cut -d "/" -f 3)
+export INGRESS_HOST=localhost
+export INGRESS_PORT=8080
+curl -v -H "Host: custom-model.default.example.com" -H "Content-Type: application/json" "http://${INGRESS_HOST}:${INGRESS_PORT}/v1/models/custom-model:predict" -d @./kserve-input.json
+```
+
+
+
+# Seldon V1
 
 
 ## Install with helm
@@ -112,30 +205,9 @@ open http://IP:7777/seldon/default/nlp-sample/api/v1.0/doc/#/
 curl -X POST "http://IP:7777/seldon/default/nlp-sample/api/v1.0/predictions" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"data\":{\"ndarray\":[\"this is an example\"]}}"
 
 ```
-# Triton 
-
-- https://github.com/NVIDIA/DeepLearningExamples/blob/master/PyTorch/LanguageModeling/BERT/triton/README.md
-
-# KServe 
-
-```
-curl -s "https://raw.githubusercontent.com/kserve/kserve/release-0.10/hack/quick_install.sh" | bash
 
 
-kubectl create -f kserve-iris.yaml
 
-
-INGRESS_GATEWAY_SERVICE=$(kubectl get svc --namespace istio-system --selector="app=istio-ingressgateway" --output jsonpath='{.items[0].metadata.name}')
-kubectl port-forward --namespace istio-system svc/${INGRESS_GATEWAY_SERVICE} 8080:80
-
-
-SERVICE_HOSTNAME=$(kubectl get inferenceservice sklearn-iris -o jsonpath='{.status.url}' | cut -d "/" -f 3)
-export INGRESS_HOST=localhost
-export INGRESS_PORT=8080
-
-curl -v -H "Host: ${SERVICE_HOSTNAME}" "http://${INGRESS_HOST}:${INGRESS_PORT}/v1/models/sklearn-iris:predict" -d @./iris-input.json
-
-```
 
 
 

@@ -15,7 +15,7 @@ class CustomModel(Model):
     def predict(self, payload: Dict, headers: Dict[str, str] = None) -> Dict:
         instances = payload["instances"]
         predictions = self.predictor.predict(instances)
-        return {"predictions": predictions}
+        return {"predictions": predictions.tolist()}
 
 if __name__ == "__main__":
     model = CustomModel("custom-model")
