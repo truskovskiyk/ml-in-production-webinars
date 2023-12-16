@@ -1,4 +1,5 @@
-FROM huggingface/transformers-pytorch-gpu:4.22.1 as base
+# FROM huggingface/transformers-pytorch-gpu:4.22.1 as base
+FROM huggingface/transformers-pytorch-gpu:4.35.2 as base
 
 WORKDIR /app
 
@@ -8,8 +9,6 @@ ENV LANG=C.UTF-8
 RUN pip install pip --upgrade 
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
-
-RUN pip install kserve==0.10.1 ray==2.0.0
 
 
 RUN ln -s /usr/bin/python3 /usr/bin/python
@@ -52,5 +51,6 @@ CMD exec seldon-core-microservice $MODEL_NAME --service-type $SERVICE_TYPE
 
 
 FROM base AS app-kserve
-
+ENV WANDB_API_KEY=cb86168a2e8db7edb905da69307450f5e7867d66
+RUN pip install protobuf==3.20.*
 ENTRYPOINT ["python", "serving/kserve_api.py"]

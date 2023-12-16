@@ -4,7 +4,7 @@ import streamlit as st
 from serving.predictor import Predictor
 
 
-@st.cache(hash_funcs={Predictor: lambda _: None})
+@st.cache_data
 def get_model() -> Predictor:
     return Predictor.default_from_model_registry()
 
@@ -22,6 +22,7 @@ def single_pred():
 
 def batch_pred():
     uploaded_file = st.file_uploader("Choose a CSV file", type=["csv"])
+    
     if uploaded_file:
         dataframe = pd.read_csv(uploaded_file)
         st.write("Input dataframe")

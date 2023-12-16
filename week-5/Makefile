@@ -1,3 +1,6 @@
+build_all:
+	docker build -f Dockerfile -t all:latest --target app-seldon .    
+
 build_app_streamlit:
 	docker build -f Dockerfile -t app-streamlit:latest --target app-streamlit .  
 
@@ -15,6 +18,9 @@ build_app_seldon:
 
 run_app_seldon: build_app_seldon
 	docker run -it -p 8081:8080 -e WANDB_API_KEY=${WANDB_API_KEY} app-seldon:latest
+
+run_dev: build_all
+	docker run -it --net=host -v $PWD:/dev_data -e WANDB_API_KEY=${WANDB_API_KEY} all:latest /bin/bash
 
 format:
 	black --line-length 120 serving tests
