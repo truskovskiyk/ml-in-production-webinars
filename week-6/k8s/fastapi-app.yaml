@@ -18,10 +18,7 @@ spec:
           image: kyrylprojector/app-fastapi-week-6:latest
           env:
           - name: WANDB_API_KEY
-            valueFrom:
-              secretKeyRef:
-                name: wandb
-                key: WANDB_API_KEY
+            value: cb86168a2e8db7edb905da69307450f5e7867d66
           resources:
             requests:
               cpu: 200m
