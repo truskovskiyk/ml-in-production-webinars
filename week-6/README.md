@@ -4,8 +4,9 @@
 Create kind cluster 
 
 ```
+export WANDB_API_KEY="cb86168a2e8db7edb905da69307450f5e7867d66"
 kind create cluster --name ml-in-production-course-week-6
-kubectl create secret generic wandb --from-literal=WANDB_API_KEY=$WANDB_API_KEY
+kubectl create secret generic wandb --from-literal=WANDB_API_KEY=cb86168a2e8db7edb905da69307450f5e7867d66
 ```
 
 Run k9s 
@@ -202,6 +203,30 @@ Trigger the model
 mc cp data/text-input.json myminio/input
 ```
 
+
+## Model optimization
+
+- https://github.com/huggingface/transformers/tree/main/examples/research_projects/distillation
+- https://github.com/huggingface/distil-whisper/
+
+
+- https://github.com/intel/neural-compressor
+- https://github.com/neuralmagic/sparseml
+
+
+- https://github.com/huggingface/optimum-nvidia
+- https://github.com/huggingface/optimum-neuron
+- https://github.com/huggingface/optimum-intel
+- https://github.com/huggingface/optimum-habana
+- https://github.com/huggingface/optimum-amd
+
+- https://github.com/huggingface/text-generation-inference
+- https://github.com/huggingface/text-embeddings-inference
+
+- https://github.com/Dao-AILab/flash-attention
+- https://github.com/vllm-project/vllm
+- https://github.com/TimDettmers/bitsandbytes
+- https://github.com/huggingface/quanto
 
 
 
