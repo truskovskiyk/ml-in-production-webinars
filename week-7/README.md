@@ -17,7 +17,6 @@ k9s -A
 # Grafana 
 
 
-
 ```
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
@@ -118,12 +117,10 @@ seldon pipeline list
 
 ## LLM Observability
 
-- https://www.gantry.io/
 - https://fullstackdeeplearning.com/llm-bootcamp/spring-2023/llmops/
-
+- https://www.gantry.io/
 - https://arize.com/
 - https://github.com/Arize-ai/phoenix
-
 - https://www.rungalileo.io/
 - https://www.vellum.ai/
 - https://smith.langchain.com
